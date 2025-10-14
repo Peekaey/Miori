@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="NetCord" Version="1.0.0-alpha.433" />
+      <PackageReference Include="NetCord.Hosting" Version="1.0.0-alpha.433" />
+      <PackageReference Include="NetCord.Hosting.AspNetCore" Version="1.0.0-alpha.433" />
+      <PackageReference Include="NetCord.Hosting.Services" Version="1.0.0-alpha.433" />
+      <PackageReference Include="NetCord.Services" Version="1.0.0-alpha.433" />
+    </ItemGroup>
+
+</Project>

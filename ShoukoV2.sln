@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShoukoV2.DiscordBot", "ShoukoV2.DiscordBot\ShoukoV2.DiscordBot.csproj", "{4BC46E6C-0071-40AD-874E-7DDA299F54A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShoukoV2.Models", "ShoukoV2.Models\ShoukoV2.Models.csproj", "{74DB5BFB-7BED-4551-B4C4-DB90742DAE34}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShoukoV2.BackgroundService", "ShoukoV2.BackgroundService\ShoukoV2.BackgroundService.csproj", "{93FA7359-1598-4968-B322-4B95A2A0D013}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShoukoV2.Helpers", "ShoukoV2.Helpers\ShoukoV2.Helpers.csproj", "{A35A76BB-561E-4B80-B4EC-29746A66F9A8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4BC46E6C-0071-40AD-874E-7DDA299F54A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BC46E6C-0071-40AD-874E-7DDA299F54A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BC46E6C-0071-40AD-874E-7DDA299F54A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BC46E6C-0071-40AD-874E-7DDA299F54A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74DB5BFB-7BED-4551-B4C4-DB90742DAE34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74DB5BFB-7BED-4551-B4C4-DB90742DAE34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74DB5BFB-7BED-4551-B4C4-DB90742DAE34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74DB5BFB-7BED-4551-B4C4-DB90742DAE34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93FA7359-1598-4968-B322-4B95A2A0D013}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93FA7359-1598-4968-B322-4B95A2A0D013}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93FA7359-1598-4968-B322-4B95A2A0D013}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93FA7359-1598-4968-B322-4B95A2A0D013}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A35A76BB-561E-4B80-B4EC-29746A66F9A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A35A76BB-561E-4B80-B4EC-29746A66F9A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A35A76BB-561E-4B80-B4EC-29746A66F9A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A35A76BB-561E-4B80-B4EC-29746A66F9A8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
