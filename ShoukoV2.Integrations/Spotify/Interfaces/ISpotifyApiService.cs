@@ -7,4 +7,5 @@ public interface ISpotifyApiService
 {
     Task<ApiResult<string>> GetAccessToken();
     Task<ApiResult<SpotifyMeResponse>> GetSpotifyProfileInfo();
+    Task RegisterSpotifyUserId();
 }

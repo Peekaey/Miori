@@ -2,7 +2,9 @@ using System.Net.Http.Json;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using ShoukoV2.Integrations.Spotify.Interfaces;
 using ShoukoV2.Models.Configuration;
+using ShoukoV2.Models.Enums;
 using ShoukoV2.Models.Spotify;
 
 namespace ShoukoV2.Integrations.Spotify;
@@ -15,13 +17,16 @@ public class SpotifyOauthHandler : ISpotifyOauthHandler
     private readonly AppMemoryStore _appMemoryStore;
     private readonly string _scope = "playlist-read-private playlist-read-collaborative user-read-recently-played";
     private readonly string _endpoint = "https://accounts.spotify.com/authorize?";
+    private readonly ISpotifyApiService  _spotifyApiService;
     
-    public SpotifyOauthHandler(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<SpotifyOauthHandler> logger, AppMemoryStore appMemoryStore)
+    public SpotifyOauthHandler(IHttpClientFactory httpClientFactory, IConfiguration configuration, 
+        ILogger<SpotifyOauthHandler> logger, AppMemoryStore appMemoryStore, ISpotifyApiService spotifyApiService)
     {
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
         _logger = logger;
         _appMemoryStore = appMemoryStore;
+        _spotifyApiService = spotifyApiService;
     }
     
     public async Task<OAuthCallbackResult> HandleCallbackAsync(string? code, string? error)
@@ -83,8 +88,12 @@ public class SpotifyOauthHandler : ISpotifyOauthHandler
         
         if (tokenResponse != null)
         {
-            _appMemoryStore.SpotifyTokenStore.AccessToken = tokenResponse.Access_Token;
+            _appMemoryStore.SpotifyTokenStore.RegisterAccessToken(tokenResponse.Access_Token, tokenResponse.Refresh_Token, TokenType.Bearer);
             _logger.LogInformation(tokenResponse.Access_Token);
+
+            // TODO hacky -> Implement a proper background service in the future
+            await _spotifyApiService.RegisterSpotifyUserId();
+            
             return OAuthCallbackResult.Success();
         }
 

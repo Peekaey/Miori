@@ -16,6 +16,7 @@ using ShoukoV2.DataService;
 using ShoukoV2.DiscordBot.Internal;
 using ShoukoV2.DiscordBot.Internal.Interfaces;
 using ShoukoV2.Integrations.Spotify;
+using ShoukoV2.Integrations.Spotify.Interfaces;
 using ShoukoV2.Models.Configuration;
 
 namespace ShoukoV2.DiscordBot;
@@ -90,6 +91,7 @@ class Program
         builder.Services.AddSingleton<IGuildMemberHelpers, GuildMemberHelpers>();
         builder.Services.AddSingleton<AppMemoryStore>();
         builder.Services.AddHttpClient();
+        builder.Services.AddSingleton<ISpotifyApiService, SpotifyApiService>();
     }
 
     static void AddSpotifyOauthHandler(WebApplicationBuilder  builder)
