@@ -8,4 +8,6 @@ public interface ISpotifyApiService
     Task<ApiResult<string>> GetAccessToken();
     Task<ApiResult<SpotifyMeResponse>> GetSpotifyProfileInfo();
     Task RegisterSpotifyUserId();
+    Task<ApiResult<SpotifyRecentlyPlayedResponse>> GetSpotifyUserRecentlyPlayed(int limit = 10);
+    Task<ApiResult<SpotifyUserPlaylistsResponse>> GetSpotifyUserPlaylists();
 }

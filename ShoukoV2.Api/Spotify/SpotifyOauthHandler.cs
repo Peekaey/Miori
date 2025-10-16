@@ -15,7 +15,7 @@ public class SpotifyOauthHandler : ISpotifyOauthHandler
     private readonly IConfiguration _configuration;
     private readonly ILogger<SpotifyOauthHandler> _logger;
     private readonly AppMemoryStore _appMemoryStore;
-    private readonly string _scope = "playlist-read-private playlist-read-collaborative user-read-recently-played";
+    private readonly string _scope = "user-read-recently-played";
     private readonly string _endpoint = "https://accounts.spotify.com/authorize?";
     private readonly ISpotifyApiService  _spotifyApiService;
     
@@ -88,8 +88,9 @@ public class SpotifyOauthHandler : ISpotifyOauthHandler
         
         if (tokenResponse != null)
         {
-            _appMemoryStore.SpotifyTokenStore.RegisterAccessToken(tokenResponse.Access_Token, tokenResponse.Refresh_Token, TokenType.Bearer);
-            _logger.LogInformation(tokenResponse.Access_Token);
+            _appMemoryStore.SpotifyTokenStore.RegisterAccessToken(tokenResponse.access_token, tokenResponse.refresh_token, TokenType.Bearer);
+            _logger.LogInformation("Access Token" + tokenResponse.access_token);
+            _logger.LogInformation("Refresh Token" + tokenResponse.refresh_token);
 
             // TODO hacky -> Implement a proper background service in the future
             await _spotifyApiService.RegisterSpotifyUserId();

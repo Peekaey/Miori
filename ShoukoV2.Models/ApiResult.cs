@@ -15,21 +15,22 @@ public class ApiResult<T>
         StatusCode = statusCode;
         Data = data;
         ErrorMessage = errorMessage;
+        Result = resultEnum;
     }
     
     public static ApiResult<T> AsSuccess(T data)
     {
-        return new ApiResult<T>(ResultEnum.AsSuccess , HttpStatusCode.OK, data);
+        return new ApiResult<T>(ResultEnum.Success , HttpStatusCode.OK, data);
     }
     
     public static ApiResult<T> AsError(string errorMessage, HttpStatusCode statusCode = HttpStatusCode.InternalServerError)
     {
-        return new ApiResult<T>(ResultEnum.AsError, statusCode, default, errorMessage);
+        return new ApiResult<T>(ResultEnum.Error, statusCode, default, errorMessage);
     }
     
     public static ApiResult<T> AsFailure(string errorMessage, HttpStatusCode statusCode = HttpStatusCode.BadRequest)
     {
-        return new ApiResult<T>(ResultEnum.AsFailure, statusCode, default, errorMessage);
+        return new ApiResult<T>(ResultEnum.Failure, statusCode, default, errorMessage);
     }
     
     

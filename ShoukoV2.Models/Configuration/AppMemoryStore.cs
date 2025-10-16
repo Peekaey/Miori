@@ -45,4 +45,9 @@ public class SpotifyTokenStore
     {
         return AccessTokenIssuedAtUtc;
     }
+    
+    public string GetUserId()
+    {
+        return SpotifyId;
+    }
 }

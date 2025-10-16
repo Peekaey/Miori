@@ -2,9 +2,9 @@ namespace ShoukoV2.Models.Spotify;
 
 public class SpotifyTokenResponse
 {
-    public string Access_Token { get; set; } = string.Empty;
-    public string Token_Type { get; set; } = string.Empty;
-    public int Expires_In { get; set; }
-    public string Refresh_Token { get; set; } = string.Empty;
-    public string Scope { get; set; } = string.Empty;
+    public string access_token { get; set; } = string.Empty;
+    public string token_type { get; set; } = string.Empty;
+    public int expires_in { get; set; }
+    public string refresh_token { get; set; } = string.Empty;
+    public string scope { get; set; } = string.Empty;
 }

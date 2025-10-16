@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -96,7 +97,7 @@ class Program
 
     static void AddSpotifyOauthHandler(WebApplicationBuilder  builder)
     {
-        builder.Services.AddSingleton<SpotifyOauthHandler>();
+        builder.Services.AddSingleton<ISpotifyOauthHandler, SpotifyOauthHandler>();
         builder.WebHost.ConfigureKestrel(options =>
         {
             options.ListenAnyIP(5001);
@@ -150,7 +151,7 @@ class Program
     {
         host.MapGet("/callback/spotify", async (
             HttpContext context,
-            SpotifyOauthHandler oAuthHandler) =>
+            [FromServices] ISpotifyOauthHandler oAuthHandler) =>
         {
             var code = context.Request.Query["code"].ToString();
             var error = context.Request.Query["error"].ToString();

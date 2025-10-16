@@ -14,9 +14,7 @@ public class SpotifyCommandModule : ApplicationCommandModule<ApplicationCommandC
     private readonly ApplicationCommandService<ApplicationCommandContext> _commandService;
     private readonly IConfiguration _configuration;
     private readonly ISpotifyOauthHandler  _spotifyOauthHandler;
-
-    private readonly string _scope = "playlist-read-private playlist-read-collaborative user-read-recently-played";
-
+    
     public SpotifyCommandModule(ILogger<SpotifyCommandModule> logger,
         ApplicationCommandService<ApplicationCommandContext> commandService, IConfiguration configuration, ISpotifyOauthHandler spotifyOauthHandler)
     {
