@@ -29,16 +29,29 @@ public class SpotifyCommandModule : ApplicationCommandModule<ApplicationCommandC
     {
         try
         {
-            await Context.Interaction.SendResponseAsync(InteractionCallback.DeferredMessage());
-            
-            var authUrl = _spotifyOauthHandler.GenerateAuthorisationUrl();
-            
-            
-            await Context.Interaction.SendFollowupMessageAsync(new InteractionMessageProperties
+            await Context.Interaction.SendResponseAsync(InteractionCallback.DeferredMessage(MessageFlags.Ephemeral));
+
+            var ownerDiscordId = _configuration["DiscordOwnerUserId"];
+            var interactionOwnerId = Context.Interaction.User.Id;
+
+            if (ownerDiscordId != interactionOwnerId.ToString())
             {
-                Content = authUrl,
-                Flags = MessageFlags.Ephemeral
-            });
+                await Context.Interaction.SendFollowupMessageAsync(new InteractionMessageProperties
+                {
+                    Content = "This user is not allowed to execute this command",
+                    Flags = MessageFlags.Ephemeral
+                });
+            }
+            else
+            {
+                var authUrl = _spotifyOauthHandler.GenerateAuthorisationUrl();
+                await Context.Interaction.SendFollowupMessageAsync(new InteractionMessageProperties
+                {
+                    Content = authUrl,
+                    Flags = MessageFlags.Ephemeral
+                });
+            }
+            
         }
         catch (Exception e)
         {
