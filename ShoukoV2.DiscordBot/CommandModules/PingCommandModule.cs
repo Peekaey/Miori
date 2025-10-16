@@ -6,13 +6,13 @@ using NetCord.Services.ApplicationCommands;
 
 namespace ShoukoV2.Interactions.Interactions;
 
-public class Ping : ApplicationCommandModule<ApplicationCommandContext>
+public class PingCommandModule : ApplicationCommandModule<ApplicationCommandContext>
 {
-    private readonly ILogger<Ping> _logger;
+    private readonly ILogger<PingCommandModule> _logger;
     private readonly ApplicationCommandService<ApplicationCommandContext> _commandService;
 
 
-    public Ping(ILogger<Ping> logger, ApplicationCommandService<ApplicationCommandContext> commandService)
+    public PingCommandModule(ILogger<PingCommandModule> logger, ApplicationCommandService<ApplicationCommandContext> commandService)
     {
         _logger = logger;
         _commandService = commandService;

@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="Anilist\" />
+      <Folder Include="Unraid\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.10" />
+      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.10" />
+      <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.10" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.10" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ShoukoV2.Models\ShoukoV2.Models.csproj" />
+    </ItemGroup>
+
+</Project>

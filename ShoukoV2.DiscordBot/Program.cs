@@ -1,6 +1,9 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using NetCord;
 using NetCord.Gateway;
 using NetCord.Hosting.Gateway;
@@ -8,8 +11,10 @@ using NetCord.Hosting.Services;
 using NetCord.Hosting.Services.ApplicationCommands;
 using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
+using ShoukoV2.DataService;
 using ShoukoV2.DiscordBot.Internal;
 using ShoukoV2.DiscordBot.Internal.Interfaces;
+using ShoukoV2.Integrations.Spotify;
 using ShoukoV2.Models.Configuration;
 
 namespace ShoukoV2.DiscordBot;
@@ -71,12 +76,63 @@ class Program
 
     static void ConfigureServices(HostApplicationBuilder builder)
     {
-        builder.Services.AddSingleton<IGuildMemberHelpers, GuildMemberHelpers>();
+        Console.WriteLine("Configuring Services...");
+        builder.Services.AddLogging(logger =>
+        {
+            logger.ClearProviders();
+            logger.AddConsole();
+            logger.AddDebug();
+        });
         
+        builder.Services.AddSingleton<IGuildMemberHelpers, GuildMemberHelpers>();
+        builder.Services.AddSingleton<AppMemoryStore>();
+        // Web Server for Spotify Oauth Callback Server
+        builder.Services.AddHttpClient();
+        builder.Services.AddSingleton<SpotifyOauthCallbackServer>();
+        builder.Services.AddHostedService(sp => sp.GetRequiredService<SpotifyOauthCallbackServer>());
     }
 
     static void ConfigureNetcordHost(IHost host)
     {
         host.AddModules(typeof(Program).Assembly);
+        
+        var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
+        lifetime.ApplicationStarted.Register(void () =>
+        {
+            try
+            {
+                // Execute Post Startup Utilities
+                Console.WriteLine("----------ShoukoV2 Startup Complete---------");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(" Error occurred while running post startup utilities: " + e.Message);
+                lifetime.StopApplication();
+            }
+        });
+
+        
     }
+    
+    
+    private static void ConfigureDatabaseService(HostApplicationBuilder builder)
+    {
+        string postgresConnectionString = builder.Configuration["DatabaseConnectionString"];
+        
+        if (string.IsNullOrEmpty(postgresConnectionString))
+        {
+            throw new ArgumentException("Postgres connection string is not configured.", nameof(postgresConnectionString));
+        }
+
+        builder.Services.AddDbContext<DataContext>(options =>
+        {
+            options.UseNpgsql(postgresConnectionString, npgsqlOptions =>
+            {
+                npgsqlOptions.MigrationsAssembly("ShoukoV2.DataService");
+            });
+            options.UseNpgsql(postgresConnectionString)
+                .LogTo(Console.WriteLine, LogLevel.Information);
+        });
+    }
+    
 }

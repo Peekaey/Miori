@@ -8,10 +8,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0-rc.1.25451.107" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0-rc.1.25451.107" />
-      <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
-      <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.9" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+      <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.10" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10" />
+      <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.10" />
+      <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.10" />
       <PackageReference Include="NetCord" Version="1.0.0-alpha.433" />
       <PackageReference Include="NetCord.Hosting" Version="1.0.0-alpha.433" />
       <PackageReference Include="NetCord.Hosting.AspNetCore" Version="1.0.0-alpha.433" />
@@ -20,7 +26,11 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\ShoukoV2.Api\ShoukoV2.Api.csproj" />
       <ProjectReference Include="..\ShoukoV2.BackgroundService\ShoukoV2.BackgroundService.csproj" />
+      <ProjectReference Include="..\ShoukoV2.DataService\ShoukoV2.DataService.csproj" />
+      <ProjectReference Include="..\ShoukoV2.Helpers\ShoukoV2.Helpers.csproj" />
+      <ProjectReference Include="..\ShoukoV2.Integrations\ShoukoV2.Integrations.csproj" />
       <ProjectReference Include="..\ShoukoV2.Models\ShoukoV2.Models.csproj" />
     </ItemGroup>
 
