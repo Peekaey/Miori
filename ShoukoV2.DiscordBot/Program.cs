@@ -11,6 +11,7 @@ using NetCord.Hosting.Services;
 using NetCord.Hosting.Services.ApplicationCommands;
 using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
+using ShoukoV2.Api;
 using ShoukoV2.DataService;
 using ShoukoV2.DiscordBot.Internal;
 using ShoukoV2.DiscordBot.Internal.Interfaces;
@@ -25,7 +26,7 @@ class Program
     {
         Console.WriteLine("Starting ShoukoV2...");
         
-        var builder = Host.CreateApplicationBuilder(args);
+        var builder = WebApplication.CreateBuilder(args);
         
         builder.Configuration
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -39,14 +40,16 @@ class Program
         
         ConfigureNetCordBuilder(builder);
         ConfigureServices(builder);
+        AddSpotifyOauthHandler(builder);
         var host = builder.Build();
         
         ConfigureNetcordHost(host);
+        MapSpotifyOauthEndpoints(host);
         host.Run();
         Console.WriteLine("ShoukoV2 is running...");
     }
 
-    static void ValidateEnvironmentVariables(HostApplicationBuilder builder)
+    static void ValidateEnvironmentVariables(WebApplicationBuilder builder)
     {
         var discordBotToken = builder.Configuration["DiscordBotToken"];
         if (string.IsNullOrEmpty(discordBotToken))
@@ -55,7 +58,7 @@ class Program
         }
     }
 
-    static void ConfigureNetCordBuilder(HostApplicationBuilder builder)
+    static void ConfigureNetCordBuilder(WebApplicationBuilder  builder)
     {
         IEntityToken restClientToken = new BotToken(builder.Configuration["DiscordBotToken"]);
         builder.Services.AddDiscordGateway(options =>
@@ -74,7 +77,7 @@ class Program
             .AddSingleton<RestClient>(sp => new RestClient(restClientToken));
     }
 
-    static void ConfigureServices(HostApplicationBuilder builder)
+    static void ConfigureServices(WebApplicationBuilder  builder)
     {
         Console.WriteLine("Configuring Services...");
         builder.Services.AddLogging(logger =>
@@ -86,13 +89,19 @@ class Program
         
         builder.Services.AddSingleton<IGuildMemberHelpers, GuildMemberHelpers>();
         builder.Services.AddSingleton<AppMemoryStore>();
-        // Web Server for Spotify Oauth Callback Server
         builder.Services.AddHttpClient();
-        builder.Services.AddSingleton<SpotifyOauthCallbackServer>();
-        builder.Services.AddHostedService(sp => sp.GetRequiredService<SpotifyOauthCallbackServer>());
     }
 
-    static void ConfigureNetcordHost(IHost host)
+    static void AddSpotifyOauthHandler(WebApplicationBuilder  builder)
+    {
+        builder.Services.AddSingleton<SpotifyOauthHandler>();
+        builder.WebHost.ConfigureKestrel(options =>
+        {
+            options.ListenAnyIP(5001);
+        });
+    }
+
+    static void ConfigureNetcordHost(WebApplication host)
     {
         host.AddModules(typeof(Program).Assembly);
         
@@ -115,7 +124,7 @@ class Program
     }
     
     
-    private static void ConfigureDatabaseService(HostApplicationBuilder builder)
+    private static void ConfigureDatabaseService(WebApplicationBuilder  builder)
     {
         string postgresConnectionString = builder.Configuration["DatabaseConnectionString"];
         
@@ -134,5 +143,27 @@ class Program
                 .LogTo(Console.WriteLine, LogLevel.Information);
         });
     }
+
+    private static void MapSpotifyOauthEndpoints(WebApplication host)
+    {
+        host.MapGet("/callback/spotify", async (
+            HttpContext context,
+            SpotifyOauthHandler oAuthHandler) =>
+        {
+            var code = context.Request.Query["code"].ToString();
+            var error = context.Request.Query["error"].ToString();
+
+            var result = await oAuthHandler.HandleCallbackAsync(code, error);
+            if (result.IsSuccess)
+            {
+                return Results.Content(OAuthResponseBuilder.BuildSuccessPage(), "text/html");
+            }
+            else
+            {
+                return Results.Content(OAuthResponseBuilder.BuildErrorPage(result.ErrorMessage!), "text/html");
+            }
+        });
+    }
+    
     
 }

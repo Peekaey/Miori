@@ -1,8 +1,10 @@
 using System.Net.Mime;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using NetCord;
 using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
+using ShoukoV2.Integrations.Spotify;
 
 namespace ShoukoV2.Interactions.Interactions;
 
@@ -11,15 +13,17 @@ public class SpotifyCommandModule : ApplicationCommandModule<ApplicationCommandC
     private readonly ILogger<SpotifyCommandModule> _logger;
     private readonly ApplicationCommandService<ApplicationCommandContext> _commandService;
     private readonly IConfiguration _configuration;
+    private readonly ISpotifyOauthHandler  _spotifyOauthHandler;
 
     private readonly string _scope = "playlist-read-private playlist-read-collaborative user-read-recently-played";
 
     public SpotifyCommandModule(ILogger<SpotifyCommandModule> logger,
-        ApplicationCommandService<ApplicationCommandContext> commandService, IConfiguration configuration)
+        ApplicationCommandService<ApplicationCommandContext> commandService, IConfiguration configuration, ISpotifyOauthHandler spotifyOauthHandler)
     {
         _logger = logger;
         _commandService = commandService;
         _configuration = configuration;
+        _spotifyOauthHandler = spotifyOauthHandler;
     }
 
     [SlashCommand("authenticate-with-spotify", "authenticate with spotify oauth")]
@@ -29,19 +33,13 @@ public class SpotifyCommandModule : ApplicationCommandModule<ApplicationCommandC
         {
             await Context.Interaction.SendResponseAsync(InteractionCallback.DeferredMessage());
             
-            var clientId = _configuration["Spotify:ClientId"];
-            var redirectUri = Uri.EscapeDataString("http://127.0.0.1:5001/callback/spotify");
-
-            var authUrl = $"https://accounts.spotify.com/authorize?" +
-                          $"client_id={clientId}&" +
-                          $"response_type=code&" +
-                          $"redirect_uri={redirectUri}&" +
-                          $"scope={Uri.EscapeDataString(_scope)}";
+            var authUrl = _spotifyOauthHandler.GenerateAuthorisationUrl();
             
             
             await Context.Interaction.SendFollowupMessageAsync(new InteractionMessageProperties
             {
-                Content = authUrl
+                Content = authUrl,
+                Flags = MessageFlags.Ephemeral
             });
         }
         catch (Exception e)

@@ -8,7 +8,6 @@
 
     <ItemGroup>
       <Folder Include="Anilist\" />
-      <Folder Include="Spotify\" />
       <Folder Include="Unraid\" />
     </ItemGroup>
 
