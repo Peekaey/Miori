@@ -1,31 +1,29 @@
-using System.Net.Mime;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using NetCord;
 using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
-using ShoukoV2.Integrations.Spotify;
+using ShoukoV2.Api.Anilist;
 
 namespace ShoukoV2.Interactions.Interactions;
 
-public class SpotifyCommandModule : ApplicationCommandModule<ApplicationCommandContext>
+public class AnilistCommandModule : ApplicationCommandModule<ApplicationCommandContext>
 {
-    private readonly ILogger<SpotifyCommandModule> _logger;
-    private readonly ApplicationCommandService<ApplicationCommandContext> _commandService;
+    private readonly ILogger<AnilistCommandModule> _logger;
+    private readonly ApplicationCommandService<ApplicationCommandContext> _applicationCommandService;
     private readonly IConfiguration _configuration;
-    private readonly ISpotifyOauthHandler  _spotifyOauthHandler;
-    
-    public SpotifyCommandModule(ILogger<SpotifyCommandModule> logger,
-        ApplicationCommandService<ApplicationCommandContext> commandService, IConfiguration configuration, ISpotifyOauthHandler spotifyOauthHandler)
+    private readonly IAnilistOauthHandler _anilistOauthHandler;
+
+    public AnilistCommandModule(ILogger<AnilistCommandModule> logger,
+        ApplicationCommandService<ApplicationCommandContext> applicationCommandService,
+        IConfiguration configuration, IAnilistOauthHandler anilistOauthHandler)
     {
         _logger = logger;
-        _commandService = commandService;
+        _applicationCommandService = applicationCommandService;
         _configuration = configuration;
-        _spotifyOauthHandler = spotifyOauthHandler;
+        _anilistOauthHandler = anilistOauthHandler;
     }
 
-    [SlashCommand("authenticate-with-spotify", "authenticate with spotify oauth")]
-    public async Task SendSpotifyAuthenticationLink()
+    [SlashCommand("authenticate-with-anilist", "authenticate with anilist oauth")]
+    public async Task SendAnilistAuthenticationLink()
     {
         try
         {
@@ -44,23 +42,22 @@ public class SpotifyCommandModule : ApplicationCommandModule<ApplicationCommandC
             }
             else
             {
-                var authUrl = _spotifyOauthHandler.GenerateAuthorisationUrl();
+                var authUrl = _anilistOauthHandler.GenerateAuthorisationUrl();
                 await Context.Interaction.SendFollowupMessageAsync(new InteractionMessageProperties
                 {
                     Content = authUrl,
                     Flags = MessageFlags.Ephemeral
                 });
             }
-            
         }
         catch (Exception e)
         {
             await Context.Interaction.SendFollowupMessageAsync(new InteractionMessageProperties
             {
-                Content = "Unexpected error when running authenticate with spotify command",
+                Content = "Unexpected error when running authenticate with anilist command",
                 Flags = MessageFlags.Ephemeral
             });
         }
     }
-    
+
 }

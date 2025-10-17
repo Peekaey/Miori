@@ -16,7 +16,6 @@ public class SpotifyOauthHandler : ISpotifyOauthHandler
     private readonly ILogger<SpotifyOauthHandler> _logger;
     private readonly AppMemoryStore _appMemoryStore;
     private readonly string _scope = "user-read-recently-played";
-    private readonly string _endpoint = "https://accounts.spotify.com/authorize?";
     private readonly ISpotifyApiService  _spotifyApiService;
     
     public SpotifyOauthHandler(IHttpClientFactory httpClientFactory, IConfiguration configuration, 
@@ -39,7 +38,7 @@ public class SpotifyOauthHandler : ISpotifyOauthHandler
 
         if (string.IsNullOrEmpty(code))
         {
-            return OAuthCallbackResult.Error("Invalid request - No authorization code received");
+            return OAuthCallbackResult.Error("Invalid request - No authorisation code received");
         }
 
         var clientId = _configuration["Spotify:ClientId"];

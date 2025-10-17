@@ -13,9 +13,12 @@ using NetCord.Hosting.Services.ApplicationCommands;
 using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
 using ShoukoV2.Api;
+using ShoukoV2.Api.Anilist;
 using ShoukoV2.DataService;
 using ShoukoV2.DiscordBot.Internal;
 using ShoukoV2.DiscordBot.Internal.Interfaces;
+using ShoukoV2.Integrations.Anilist;
+using ShoukoV2.Integrations.Anilist.Interfaces;
 using ShoukoV2.Integrations.Spotify;
 using ShoukoV2.Integrations.Spotify.Interfaces;
 using ShoukoV2.Models.Configuration;
@@ -42,11 +45,12 @@ class Program
         
         ConfigureNetCordBuilder(builder);
         ConfigureServices(builder);
-        AddSpotifyOauthHandler(builder);
+        AddOauthHandlerEndpoints(builder);
         var host = builder.Build();
         
         ConfigureNetcordHost(host);
         MapSpotifyOauthEndpoints(host);
+        MapAnilistOauthEndpoints(host);
         host.Run();
         Console.WriteLine("ShoukoV2 is running...");
     }
@@ -93,11 +97,13 @@ class Program
         builder.Services.AddSingleton<AppMemoryStore>();
         builder.Services.AddHttpClient();
         builder.Services.AddSingleton<ISpotifyApiService, SpotifyApiService>();
+        builder.Services.AddSingleton<IAnilistApiService, AnilistApiService>();
     }
 
-    static void AddSpotifyOauthHandler(WebApplicationBuilder  builder)
+    static void AddOauthHandlerEndpoints(WebApplicationBuilder  builder)
     {
         builder.Services.AddSingleton<ISpotifyOauthHandler, SpotifyOauthHandler>();
+        builder.Services.AddSingleton<IAnilistOauthHandler, AnilistOauthHandler>();
         builder.WebHost.ConfigureKestrel(options =>
         {
             options.ListenAnyIP(5001);
@@ -152,6 +158,27 @@ class Program
         host.MapGet("/callback/spotify", async (
             HttpContext context,
             [FromServices] ISpotifyOauthHandler oAuthHandler) =>
+        {
+            var code = context.Request.Query["code"].ToString();
+            var error = context.Request.Query["error"].ToString();
+
+            var result = await oAuthHandler.HandleCallbackAsync(code, error);
+            if (result.IsSuccess)
+            {
+                return Results.Content(OAuthResponseBuilder.BuildSuccessPage(), "text/html");
+            }
+            else
+            {
+                return Results.Content(OAuthResponseBuilder.BuildErrorPage(result.ErrorMessage!), "text/html");
+            }
+        });
+    }
+
+    private static void MapAnilistOauthEndpoints(WebApplication host)
+    {
+        host.MapGet("/callback/anilist", async (
+            HttpContext context,
+            [FromServices] IAnilistOauthHandler oAuthHandler) =>
         {
             var code = context.Request.Query["code"].ToString();
             var error = context.Request.Query["error"].ToString();

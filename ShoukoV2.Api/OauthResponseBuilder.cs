@@ -26,7 +26,7 @@ public static class OAuthResponseBuilder
             <body>
                 <div class='message'>
                     <h1>Success!</h1>
-                    <p>Authentication with Spotify successful</p>
+                    <p>Authentication successful</p>
                     <p>This window can safely be closed</p>
                 </div>
             </body>
