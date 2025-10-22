@@ -15,7 +15,6 @@ public class SpotifyOauthHandler : ISpotifyOauthHandler
     private readonly IConfiguration _configuration;
     private readonly ILogger<SpotifyOauthHandler> _logger;
     private readonly AppMemoryStore _appMemoryStore;
-    private readonly string _scope = "user-read-recently-played";
     private readonly ISpotifyApiService  _spotifyApiService;
     
     public SpotifyOauthHandler(IHttpClientFactory httpClientFactory, IConfiguration configuration, 
@@ -44,7 +43,7 @@ public class SpotifyOauthHandler : ISpotifyOauthHandler
         var clientId = _configuration["Spotify:ClientId"];
         var clientSecret = _configuration["Spotify:ClientSecret"];
         var redirectUri = _configuration["Spotify:RedirectUri"];
-
+        var scope = _configuration["Spotify:Scope"];
         if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
         {
             _logger.LogError("Spotify credentials not configured");
@@ -61,7 +60,7 @@ public class SpotifyOauthHandler : ISpotifyOauthHandler
             ["grant_type"] = "authorization_code",
             ["code"] = code,
             ["redirect_uri"] = redirectUri,
-            ["scope"] = _scope
+            ["scope"] = scope
         };
 
         var request = new HttpRequestMessage(HttpMethod.Post, "https://accounts.spotify.com/api/token")
@@ -98,17 +97,5 @@ public class SpotifyOauthHandler : ISpotifyOauthHandler
         }
 
         return OAuthCallbackResult.Error("Failed to parse token response");
-    }
-    
-    public string GenerateAuthorisationUrl()
-    {
-        var clientId = _configuration["Spotify:ClientId"];
-        var redirectUri = Uri.EscapeDataString(_configuration["Spotify:RedirectUri"]);
-        
-        return "https://accounts.spotify.com/authorize?" +
-               $"client_id={clientId}" +
-               $"&response_type=code" +
-               $"&redirect_uri={redirectUri}" +
-               $"&scope={Uri.EscapeDataString(_scope)}";
     }
 }

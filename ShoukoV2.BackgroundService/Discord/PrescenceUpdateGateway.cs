@@ -26,7 +26,7 @@ public class PrescenceUpdateGateway : IPresenceUpdateGatewayHandler
     public async ValueTask HandleAsync(Presence arg)
     {
         _logger.LogInformation("{}", arg);
-        DiscordRichPresenceSocketDto dto = arg.ToDto();
+        DiscordRichPresenceSocketDto dto = arg.MapToDto();
         await _discordPresenceHub.SendMessage(dto);
     }
 }

@@ -40,7 +40,7 @@ public class SpotifyBusinessService : ISpotifyBusinessService
             {
                 spotifyProfileDto.RecentlyPlayed = spotifyRecentlyPlayedResult.Data;
             }
-
+            
             if (spotifyPlaylistsResult.ResultOutcome == ResultEnum.Success)
             {
                 spotifyProfileDto.UserPlaylists = spotifyPlaylistsResult.Data;

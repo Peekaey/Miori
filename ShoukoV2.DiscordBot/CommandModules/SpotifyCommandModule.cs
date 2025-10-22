@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using NetCord;
 using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
+using ShoukoV2.Helpers.Oauth;
 using ShoukoV2.Integrations.Spotify;
 
 namespace ShoukoV2.Interactions.Interactions;
@@ -13,15 +14,15 @@ public class SpotifyCommandModule : ApplicationCommandModule<ApplicationCommandC
     private readonly ILogger<SpotifyCommandModule> _logger;
     private readonly ApplicationCommandService<ApplicationCommandContext> _commandService;
     private readonly IConfiguration _configuration;
-    private readonly ISpotifyOauthHandler  _spotifyOauthHandler;
+    private readonly IOauthHelpers  _oauthHelpers;
     
     public SpotifyCommandModule(ILogger<SpotifyCommandModule> logger,
-        ApplicationCommandService<ApplicationCommandContext> commandService, IConfiguration configuration, ISpotifyOauthHandler spotifyOauthHandler)
+        ApplicationCommandService<ApplicationCommandContext> commandService, IConfiguration configuration, IOauthHelpers oauthHelpers)
     {
         _logger = logger;
         _commandService = commandService;
         _configuration = configuration;
-        _spotifyOauthHandler = spotifyOauthHandler;
+        _oauthHelpers = oauthHelpers;
     }
 
     [SlashCommand("authenticate-with-spotify", "authenticate with spotify oauth")]
@@ -31,7 +32,7 @@ public class SpotifyCommandModule : ApplicationCommandModule<ApplicationCommandC
         {
             await Context.Interaction.SendResponseAsync(InteractionCallback.DeferredMessage(MessageFlags.Ephemeral));
 
-            var ownerDiscordId = _configuration["DiscordOwnerUserId"];
+            var ownerDiscordId = _configuration["Discord:OwnerUserId"];
             var interactionOwnerId = Context.Interaction.User.Id;
 
             if (ownerDiscordId != interactionOwnerId.ToString())
@@ -44,7 +45,7 @@ public class SpotifyCommandModule : ApplicationCommandModule<ApplicationCommandC
             }
             else
             {
-                var authUrl = _spotifyOauthHandler.GenerateAuthorisationUrl();
+                var authUrl = _oauthHelpers.GenerateSpotifyAuthorisationUrl();
                 await Context.Interaction.SendFollowupMessageAsync(new InteractionMessageProperties
                 {
                     Content = authUrl,

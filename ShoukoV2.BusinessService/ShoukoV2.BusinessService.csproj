@@ -12,6 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\ShoukoV2.Helpers\ShoukoV2.Helpers.csproj" />
       <ProjectReference Include="..\ShoukoV2.Integrations\ShoukoV2.Integrations.csproj" />
     </ItemGroup>
 

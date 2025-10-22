@@ -5,7 +5,7 @@ namespace ShoukoV2.Helpers.Discord;
 
 public static class MappingHelpers
 {
-    public static DiscordRichPresenceSocketDto ToDto(this Presence presence)
+    public static DiscordRichPresenceSocketDto MapToDto(this Presence presence)
     {
         return new DiscordRichPresenceSocketDto
         {

@@ -7,5 +7,4 @@ namespace ShoukoV2.Api.Anilist;
 public interface IAnilistOauthHandler
 {
     Task<OAuthCallbackResult> HandleCallbackAsync(string? code, string? error);
-    string GenerateAuthorisationUrl();
 }

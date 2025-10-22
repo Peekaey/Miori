@@ -5,6 +5,7 @@ using NetCord.Gateway;
 using ShoukoV2.BackgroundService;
 using ShoukoV2.BusinessService.Interfaces;
 using ShoukoV2.DiscordBot.Internal.Interfaces;
+using ShoukoV2.Helpers.Discord;
 using ShoukoV2.Models;
 using ShoukoV2.Models.Discord;
 
@@ -28,26 +29,25 @@ public class DiscordBusinessService : IDiscordBusinessService
 
     // As the application is currently only intended get the data off a single guild/user
     // Hardcore the values for now
-    public async Task<Result<DiscordPresenceDto>> GetDiscordPresence()
+    public async Task<Result<DiscordRichPresenceSocketDto>> GetDiscordPresence()
     {
         try
         {
             ulong guildId = ulong.Parse(_configuration["Discord:OwnerGuildId"]);
             ulong userId = ulong.Parse(_configuration["Discord:OwnerUserId"]);
-            DiscordPresenceDto discordPresenceDto = new DiscordPresenceDto();
 
             Presence? presence = await GetUserPresenceAsync(guildId, userId);
 
-            if (presence != null)
+            if (presence == null)
             {
-                discordPresenceDto.Presence = presence;
+                return Result<DiscordRichPresenceSocketDto>.AsError("Unable to obtain presence of user");
             }
-
-            return Result<DiscordPresenceDto>.AsSuccess(discordPresenceDto);
+            
+            return Result<DiscordRichPresenceSocketDto>.AsSuccess(presence.MapToDto());
         }
         catch (Exception ex)
         {
-            return Result<DiscordPresenceDto>.AsError(ex.Message);
+            return Result<DiscordRichPresenceSocketDto>.AsError(ex.Message);
         }
     }
     public async Task<Presence?> GetUserPresenceAsync(ulong guildId, ulong userId)

@@ -89,18 +89,4 @@ public class AnilistOauthHandler : IAnilistOauthHandler
         
         return OAuthCallbackResult.Success();
     }
-
-    // https://docs.anilist.co/guide/auth/authorization-code
-    public string GenerateAuthorisationUrl()
-    {
-        var clientId = _configuration["Anilist:ClientId"];
-        var redirectUri = Uri.EscapeDataString(_configuration["Anilist:RedirectUri"]);
-        
-        return "https://anilist.co/api/v2/oauth/authorize?" +
-               "client_id=" + clientId +
-               "&redirect_uri=" + redirectUri
-               + "&response_type=code";
-    }
-    
-
 }

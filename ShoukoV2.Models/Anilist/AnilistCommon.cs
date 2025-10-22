@@ -14,9 +14,9 @@ public class AnilistViewer
 {
     public int id { get; set; }
     public string name { get; set; }
+    public AnilistAvatar avatar { get; set; } = new();
     public string? bannerImage { get; set; }
     public AnilistUserStatistics statistics { get; set; } = new();
-    public AnilistAvatar avatar { get; set; } = new();
 }
 
 public class AnilistAvatar

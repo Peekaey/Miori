@@ -21,6 +21,7 @@ using ShoukoV2.BusinessService.Interfaces;
 using ShoukoV2.DataService;
 using ShoukoV2.DiscordBot.Internal;
 using ShoukoV2.DiscordBot.Internal.Interfaces;
+using ShoukoV2.Helpers.Oauth;
 using ShoukoV2.Integrations.Anilist;
 using ShoukoV2.Integrations.Anilist.Interfaces;
 using ShoukoV2.Integrations.Spotify;
@@ -114,6 +115,8 @@ class Program
         
         builder.Services.AddSignalR();
         builder.Services.AddControllers();
+
+        builder.Services.AddSingleton<IOauthHelpers, OauthHelpers>();
 
     }
     
