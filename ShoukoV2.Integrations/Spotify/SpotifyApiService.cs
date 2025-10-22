@@ -30,14 +30,13 @@ public class SpotifyApiService : ISpotifyApiService
         _appMemoryStore = appMemoryStore;
     }
 
-    public async Task<ApiResult<string>> GetAccessToken()
+    public async Task<Result<string>> GetAccessToken()
     {
         string? clientId = _configuration["Spotify:ClientId"];
         string? clientSecret = _configuration["Spotify:ClientSecret"];
         if (clientId == null || clientSecret == null)
         {
-            return ApiResult<string>.AsError("Spotify client ID or secret is not configured",
-                System.Net.HttpStatusCode.InternalServerError);
+            return Result<string>.AsError("Spotify client ID or secret is not configured");
         }
 
         var request = new HttpRequestMessage(HttpMethod.Post, "https://accounts.spotify.com/api/token");
@@ -54,26 +53,26 @@ public class SpotifyApiService : ISpotifyApiService
 
         if (!response.IsSuccessStatusCode)
         {
-            return ApiResult<string>.AsError("Error when attempting to obtain token", response.StatusCode);
+            return Result<string>.AsError("Error when attempting to obtain token");
         }
         
         var responseContent = await response.Content.ReadAsStringAsync();
         var tokenResponse = System.Text.Json.JsonSerializer.Deserialize<SpotifyTokenResponse>(responseContent);
         if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.access_token))
         {
-            return ApiResult<string>.AsError("Invalid token response from Spotify", System.Net.HttpStatusCode.InternalServerError);
+            return Result<string>.AsError("Invalid token response from Spotify");
         }
-        return ApiResult<string>.AsSuccess(tokenResponse.access_token);
+        return Result<string>.AsSuccess(tokenResponse.access_token);
     }
 
     // https://developer.spotify.com/documentation/web-api/reference/get-current-users-profile
-    public async Task<ApiResult<SpotifyMeResponse>> GetSpotifyProfileInfo()
+    public async Task<Result<SpotifyMeResponse>> GetSpotifyProfileInfo()
     {
         var bearerToken = _appMemoryStore.SpotifyTokenStore.GetAccessToken();
 
         if (string.IsNullOrEmpty(bearerToken))
         {
-            return ApiResult<SpotifyMeResponse>.AsFailure("No Access Token Found");
+            return Result<SpotifyMeResponse>.AsFailure("No Access Token Found");
         }
         
         var request = new HttpRequestMessage(HttpMethod.Get, "https://api.spotify.com/v1/me");
@@ -86,24 +85,24 @@ public class SpotifyApiService : ISpotifyApiService
 
         if (!response.IsSuccessStatusCode)
         {
-            return ApiResult<SpotifyMeResponse>.AsError("Non success returned from Spotify Api", response.StatusCode);
+            return Result<SpotifyMeResponse>.AsError("Non success returned from Spotify Api");
         }
         
         var responseContent = await response.Content.ReadFromJsonAsync<SpotifyMeResponse>();
 
         if (responseContent == null)
         {
-            return ApiResult<SpotifyMeResponse>.AsFailure("Failed to deserialise the response");
+            return Result<SpotifyMeResponse>.AsFailure("Failed to deserialise the response");
         }
         
-        return ApiResult<SpotifyMeResponse>.AsSuccess(responseContent);
+        return Result<SpotifyMeResponse>.AsSuccess(responseContent);
     }
 
     public async Task RegisterSpotifyUserId()
     {
         var userProfileDataResult = await GetSpotifyProfileInfo();
 
-        if (userProfileDataResult.Result == ResultEnum.Success)
+        if (userProfileDataResult.ResultOutcome == ResultEnum.Success)
         {
             _appMemoryStore.SpotifyTokenStore.RegisterSpotifyId(userProfileDataResult.Data.id);
         }
@@ -163,13 +162,13 @@ public class SpotifyApiService : ISpotifyApiService
     }
 
     // https://developer.spotify.com/documentation/web-api/reference/get-recently-played
-    public async Task<ApiResult<SpotifyRecentlyPlayedResponse>> GetSpotifyUserRecentlyPlayed(int limit = 10)
+    public async Task<Result<SpotifyRecentlyPlayedResponse>> GetSpotifyUserRecentlyPlayed(int limit = 10)
     {
         var bearerToken = _appMemoryStore.SpotifyTokenStore.GetAccessToken();
 
         if (string.IsNullOrEmpty(bearerToken))
         {
-            return ApiResult<SpotifyRecentlyPlayedResponse>.AsFailure("No Access Token Found");
+            return Result<SpotifyRecentlyPlayedResponse>.AsFailure("No Access Token Found");
         }
         
         var request = new HttpRequestMessage(HttpMethod.Get,
@@ -181,34 +180,34 @@ public class SpotifyApiService : ISpotifyApiService
 
         if (!response.IsSuccessStatusCode)
         {
-            return ApiResult<SpotifyRecentlyPlayedResponse>.AsFailure("Non success returned from spotify api");
+            return Result<SpotifyRecentlyPlayedResponse>.AsFailure("Non success returned from spotify api");
         }
         
         var responseContent = await response.Content.ReadFromJsonAsync<SpotifyRecentlyPlayedResponse>();
 
         if (responseContent == null)
         {
-            return ApiResult<SpotifyRecentlyPlayedResponse>.AsFailure("Failed to deserialise the response");
+            return Result<SpotifyRecentlyPlayedResponse>.AsFailure("Failed to deserialise the response");
         }
         
-        return ApiResult<SpotifyRecentlyPlayedResponse>.AsSuccess(responseContent);
+        return Result<SpotifyRecentlyPlayedResponse>.AsSuccess(responseContent);
     }
 
     // https://developer.spotify.com/documentation/web-api/reference/get-list-users-playlists
-    public async Task<ApiResult<SpotifyUserPlaylistsResponse>> GetSpotifyUserPlaylists()
+    public async Task<Result<SpotifyUserPlaylistsResponse>> GetSpotifyUserPlaylists()
     {
         var bearerToken = _appMemoryStore.SpotifyTokenStore.GetAccessToken();
     
         if (string.IsNullOrEmpty(bearerToken))
         {
-            return ApiResult<SpotifyUserPlaylistsResponse>.AsFailure("No Access Token Found");
+            return Result<SpotifyUserPlaylistsResponse>.AsFailure("No Access Token Found");
         }
     
         var userId = _appMemoryStore.SpotifyTokenStore.GetUserId();
     
         if (string.IsNullOrEmpty(userId))
         {
-            return ApiResult<SpotifyUserPlaylistsResponse>.AsFailure("No User Id Stored");
+            return Result<SpotifyUserPlaylistsResponse>.AsFailure("No User Id Stored");
         }
         
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.spotify.com/v1/users/{userId}/playlists");
@@ -219,17 +218,18 @@ public class SpotifyApiService : ISpotifyApiService
 
         if (!response.IsSuccessStatusCode)
         {
-            return ApiResult<SpotifyUserPlaylistsResponse>.AsFailure("Non success returned from spotify api");
+            return Result<SpotifyUserPlaylistsResponse>.AsFailure("Non success returned from spotify api");
         }
-        
-        var responseContent = await response.Content.ReadFromJsonAsync<SpotifyUserPlaylistsResponse>();
 
+
+        var responseContent = await response.Content.ReadFromJsonAsync<SpotifyUserPlaylistsResponse>();
+        
         if (responseContent == null)
         {
-            return ApiResult<SpotifyUserPlaylistsResponse>.AsFailure("Failed to get playlists");
+            return Result<SpotifyUserPlaylistsResponse>.AsFailure("Failed to get playlists");
         }
         
-        return ApiResult<SpotifyUserPlaylistsResponse>.AsSuccess(responseContent);
+        return Result<SpotifyUserPlaylistsResponse>.AsSuccess(responseContent);
         
     }
     

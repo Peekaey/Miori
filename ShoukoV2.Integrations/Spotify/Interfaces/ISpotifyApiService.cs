@@ -5,9 +5,10 @@ namespace ShoukoV2.Integrations.Spotify.Interfaces;
 
 public interface ISpotifyApiService
 {
-    Task<ApiResult<string>> GetAccessToken();
-    Task<ApiResult<SpotifyMeResponse>> GetSpotifyProfileInfo();
+    Task<Result<string>> GetAccessToken();
+    Task<Result<SpotifyMeResponse>> GetSpotifyProfileInfo();
     Task RegisterSpotifyUserId();
-    Task<ApiResult<SpotifyRecentlyPlayedResponse>> GetSpotifyUserRecentlyPlayed(int limit = 10);
-    Task<ApiResult<SpotifyUserPlaylistsResponse>> GetSpotifyUserPlaylists();
+    Task<Result<SpotifyRecentlyPlayedResponse>> GetSpotifyUserRecentlyPlayed(int limit = 10);
+    Task<Result<SpotifyUserPlaylistsResponse>> GetSpotifyUserPlaylists();
+    Task ValidateAndRefreshToken();
 }

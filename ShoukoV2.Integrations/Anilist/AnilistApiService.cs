@@ -36,6 +36,12 @@ public class AnilistApiService : IAnilistApiService
         @"
         query {
           Viewer {
+            id
+            name
+            avatar {
+              large
+            }
+            bannerImage
             statistics {
               anime {
                 count
@@ -67,13 +73,13 @@ public class AnilistApiService : IAnilistApiService
     // Access Tokens are long-lived. They will remain valid for 1 year from the time they are issued.
     // Therefore we do not need to build token refresh functionality
     
-    public async Task<ApiResult<AnilistViewerResponse>> GetAnilistProfileInfo()
+    public async Task<Result<AnilistViewerResponse>> GetAnilistProfileInfo()
     {
         var bearerToken = _appMemoryStore.AnilistTokenStore.GetAccessToken();
 
         if (string.IsNullOrEmpty(bearerToken))
         {
-            return ApiResult<AnilistViewerResponse>.AsFailure("Bearer token not found");
+            return Result<AnilistViewerResponse>.AsFailure("Bearer token not found");
         }
         
         var requestBody = new
@@ -94,31 +100,31 @@ public class AnilistApiService : IAnilistApiService
 
         if (!response.IsSuccessStatusCode)
         {
-            return ApiResult<AnilistViewerResponse>.AsError("Unsuccessfull response from Anilist Api", response.StatusCode);
+            return Result<AnilistViewerResponse>.AsError("Unsuccessfull response from Anilist Api");
         }
         
         var responseString = await response.Content.ReadAsStringAsync();
         var responseObject = JsonSerializer.Deserialize<AnilistViewerResponse>(responseString);
         if (responseObject == null)
         {
-            return ApiResult<AnilistViewerResponse>.AsError("Failed to deserialise the response");
+            return Result<AnilistViewerResponse>.AsError("Failed to deserialise the response");
         }
         
-        return ApiResult<AnilistViewerResponse>.AsSuccess(responseObject);
+        return Result<AnilistViewerResponse>.AsSuccess(responseObject);
     }
     
-    public async Task<ApiResult<AnilistViewerResponse>> GetAnilistProfileStatistics()
+    public async Task<Result<AnilistViewerStatisticsResponse>> GetAnilistProfileStatistics()
     {
         var bearerToken = _appMemoryStore.AnilistTokenStore.GetAccessToken();
 
         if (string.IsNullOrEmpty(bearerToken))
         {
-            return ApiResult<AnilistViewerResponse>.AsFailure("Bearer token not found");
+            return Result<AnilistViewerStatisticsResponse>.AsFailure("Bearer token not found");
         }
         
         var requestBody = new
         {
-            query = _currentUserQuery,
+            query = _currentUserStatistics
         };
         
         var json = JsonSerializer.Serialize(requestBody);
@@ -134,17 +140,17 @@ public class AnilistApiService : IAnilistApiService
 
         if (!response.IsSuccessStatusCode)
         {
-            return ApiResult<AnilistViewerResponse>.AsError("Unsuccessfull response from Anilist Api", response.StatusCode);
+            return Result<AnilistViewerStatisticsResponse>.AsError("Unsuccessful response from Anilist Api");
         }
         
         var responseString = await response.Content.ReadAsStringAsync();
-        var responseObject = JsonSerializer.Deserialize<AnilistViewerResponse>(responseString);
+        var responseObject = JsonSerializer.Deserialize<AnilistViewerStatisticsResponse>(responseString);
         if (responseObject == null)
         {
-            return ApiResult<AnilistViewerResponse>.AsError("Failed to deserialise the response");
+            return Result<AnilistViewerStatisticsResponse>.AsError("Failed to deserialise the response");
         }
         
-        return ApiResult<AnilistViewerResponse>.AsSuccess(responseObject);
+        return Result<AnilistViewerStatisticsResponse>.AsSuccess(responseObject);
     }
     
     

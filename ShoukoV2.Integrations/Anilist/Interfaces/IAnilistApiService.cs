@@ -5,5 +5,6 @@ namespace ShoukoV2.Integrations.Anilist.Interfaces;
 
 public interface IAnilistApiService
 {
-    Task<ApiResult<AnilistViewerResponse>> GetAnilistProfileInfo();
+    Task<Result<AnilistViewerResponse>> GetAnilistProfileInfo();
+    Task<Result<AnilistViewerStatisticsResponse>> GetAnilistProfileStatistics();
 }

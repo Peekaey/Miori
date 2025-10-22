@@ -7,10 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Unraid\" />
-    </ItemGroup>
-
-    <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
     
@@ -21,6 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\ShoukoV2.BusinessService\ShoukoV2.BusinessService.csproj" />
       <ProjectReference Include="..\ShoukoV2.Integrations\ShoukoV2.Integrations.csproj" />
       <ProjectReference Include="..\ShoukoV2.Models\ShoukoV2.Models.csproj" />
     </ItemGroup>

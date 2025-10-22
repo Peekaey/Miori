@@ -14,6 +14,8 @@ using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
 using ShoukoV2.Api;
 using ShoukoV2.Api.Anilist;
+using ShoukoV2.BusinessService;
+using ShoukoV2.BusinessService.Interfaces;
 using ShoukoV2.DataService;
 using ShoukoV2.DiscordBot.Internal;
 using ShoukoV2.DiscordBot.Internal.Interfaces;
@@ -46,8 +48,9 @@ class Program
         ConfigureNetCordBuilder(builder);
         ConfigureServices(builder);
         AddOauthHandlerEndpoints(builder);
+        AddApiControllers(builder);
         var host = builder.Build();
-        
+        MapApiControllers(host);
         ConfigureNetcordHost(host);
         MapSpotifyOauthEndpoints(host);
         MapAnilistOauthEndpoints(host);
@@ -98,6 +101,22 @@ class Program
         builder.Services.AddHttpClient();
         builder.Services.AddSingleton<ISpotifyApiService, SpotifyApiService>();
         builder.Services.AddSingleton<IAnilistApiService, AnilistApiService>();
+
+        builder.Services.AddSingleton<IAnilistBusinessService, AnilistBusinessService>();
+        builder.Services.AddSingleton<IDiscordBusinessService, DiscordBusinessService>();
+        builder.Services.AddSingleton<ISpotifyBusinessService, SpotifyBusinessService>();
+        builder.Services.AddSingleton<IUnraidBusinessService, UnraidBusinessService>();
+    }
+
+    static void AddApiControllers(WebApplicationBuilder builder)
+    {
+        builder.Services.AddControllers();
+    }
+
+    static void MapApiControllers(WebApplication host)
+    {
+        
+        host.MapControllers();
     }
 
     static void AddOauthHandlerEndpoints(WebApplicationBuilder  builder)
