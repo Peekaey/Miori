@@ -1,16 +1,17 @@
 using Microsoft.Extensions.Logging;
 using NetCord;
+using NetCord.Gateway;
 using NetCord.Rest;
 using ShoukoV2.DiscordBot.Internal.Interfaces;
 
 namespace ShoukoV2.DiscordBot.Internal;
 
-public class GuildMemberHelpers : IGuildMemberHelpers
+public class DiscordRestService : IDiscordRestService
 {
-    private readonly ILogger<GuildMemberHelpers> _logger;
+    private readonly ILogger<DiscordRestService> _logger;
     private readonly RestClient _restClient;
     
-    public GuildMemberHelpers(RestClient restClient, ILogger<GuildMemberHelpers> logger)
+    public DiscordRestService(RestClient restClient, ILogger<DiscordRestService> logger)
     {
         _restClient = restClient;
         _logger = logger;
@@ -21,5 +22,6 @@ public class GuildMemberHelpers : IGuildMemberHelpers
         var member = await _restClient.GetGuildUserAsync(guildId,uuid);
         return member;
     }
+    
     
 }

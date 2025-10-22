@@ -14,6 +14,7 @@ using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
 using ShoukoV2.Api;
 using ShoukoV2.Api.Anilist;
+using ShoukoV2.BackgroundService;
 using ShoukoV2.BusinessService;
 using ShoukoV2.BusinessService.Interfaces;
 using ShoukoV2.DataService;
@@ -60,7 +61,7 @@ class Program
 
     static void ValidateEnvironmentVariables(WebApplicationBuilder builder)
     {
-        var discordBotToken = builder.Configuration["DiscordBotToken"];
+        var discordBotToken = builder.Configuration["Discord:BotToken"];
         if (string.IsNullOrEmpty(discordBotToken))
         {
             throw new ArgumentException("DiscordBotToken is required", nameof(discordBotToken));
@@ -69,7 +70,7 @@ class Program
 
     static void ConfigureNetCordBuilder(WebApplicationBuilder  builder)
     {
-        IEntityToken restClientToken = new BotToken(builder.Configuration["DiscordBotToken"]);
+        IEntityToken restClientToken = new BotToken(builder.Configuration["Discord:BotToken"]);
         builder.Services.AddDiscordGateway(options =>
             {
                 options.Intents = GatewayIntents.GuildMessages
@@ -79,9 +80,10 @@ class Program
                                   | GatewayIntents.Guilds
                                   | GatewayIntents.GuildPresences
                                   | GatewayIntents.GuildUsers;
-                options.Token = builder.Configuration["DiscordBotToken"];
+                options.Token = builder.Configuration["Discord:BotToken"];
             })
             .AddApplicationCommands()
+            .AddGatewayHandler<PrescenceUpdateGateway>()
             .AddGatewayHandlers(typeof(Program).Assembly)
             .AddSingleton<RestClient>(sp => new RestClient(restClientToken));
     }
@@ -96,7 +98,7 @@ class Program
             logger.AddDebug();
         });
         
-        builder.Services.AddSingleton<IGuildMemberHelpers, GuildMemberHelpers>();
+        builder.Services.AddSingleton<IDiscordRestService, DiscordRestService>();
         builder.Services.AddSingleton<AppMemoryStore>();
         builder.Services.AddHttpClient();
         builder.Services.AddSingleton<ISpotifyApiService, SpotifyApiService>();
@@ -106,6 +108,9 @@ class Program
         builder.Services.AddSingleton<IDiscordBusinessService, DiscordBusinessService>();
         builder.Services.AddSingleton<ISpotifyBusinessService, SpotifyBusinessService>();
         builder.Services.AddSingleton<IUnraidBusinessService, UnraidBusinessService>();
+        
+        builder.Services.AddSingleton<IDiscordGatewayService, DiscordGatewayService>();
+        builder.Services.AddSingleton<IDiscordRestService, DiscordRestService>();
     }
 
     static void AddApiControllers(WebApplicationBuilder builder)
