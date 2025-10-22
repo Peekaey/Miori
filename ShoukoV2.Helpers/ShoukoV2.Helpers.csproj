@@ -6,4 +6,8 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\ShoukoV2.Models\ShoukoV2.Models.csproj" />
+    </ItemGroup>
+
 </Project>

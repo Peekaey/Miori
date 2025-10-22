@@ -15,11 +15,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\ShoukoV2.Api\ShoukoV2.Api.csproj" />
       <ProjectReference Include="..\ShoukoV2.BusinessService\ShoukoV2.BusinessService.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Discord\" />
+      <ProjectReference Include="..\ShoukoV2.Helpers\ShoukoV2.Helpers.csproj" />
     </ItemGroup>
 
 </Project>

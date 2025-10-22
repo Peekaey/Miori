@@ -14,6 +14,7 @@ using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
 using ShoukoV2.Api;
 using ShoukoV2.Api.Anilist;
+using ShoukoV2.Api.SignalR;
 using ShoukoV2.BackgroundService;
 using ShoukoV2.BusinessService;
 using ShoukoV2.BusinessService.Interfaces;
@@ -49,9 +50,7 @@ class Program
         ConfigureNetCordBuilder(builder);
         ConfigureServices(builder);
         AddOauthHandlerEndpoints(builder);
-        AddApiControllers(builder);
         var host = builder.Build();
-        MapApiControllers(host);
         ConfigureNetcordHost(host);
         MapSpotifyOauthEndpoints(host);
         MapAnilistOauthEndpoints(host);
@@ -111,18 +110,13 @@ class Program
         
         builder.Services.AddSingleton<IDiscordGatewayService, DiscordGatewayService>();
         builder.Services.AddSingleton<IDiscordRestService, DiscordRestService>();
-    }
-
-    static void AddApiControllers(WebApplicationBuilder builder)
-    {
-        builder.Services.AddControllers();
-    }
-
-    static void MapApiControllers(WebApplication host)
-    {
+        builder.Services.AddSingleton<IDiscordPresenceHub, DiscordPresenceHub>();
         
-        host.MapControllers();
+        builder.Services.AddSignalR();
+        builder.Services.AddControllers();
+
     }
+    
 
     static void AddOauthHandlerEndpoints(WebApplicationBuilder  builder)
     {
@@ -137,7 +131,8 @@ class Program
     static void ConfigureNetcordHost(WebApplication host)
     {
         host.AddModules(typeof(Program).Assembly);
-        
+        host.MapControllers();
+        host.MapHub<DiscordPresenceHub>("/presencehub");
         var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
         lifetime.ApplicationStarted.Register(void () =>
         {
