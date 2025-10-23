@@ -1,8 +1,10 @@
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 using ShoukoV2.BusinessService.Interfaces;
 using ShoukoV2.Integrations.Anilist.Interfaces;
 using ShoukoV2.Models;
 using ShoukoV2.Models.Anilist;
+using ShoukoV2.Models.Configuration;
 using ShoukoV2.Models.Enums;
 
 namespace ShoukoV2.BusinessService;
@@ -11,13 +13,68 @@ public class AnilistBusinessService : IAnilistBusinessService
 {
     private readonly ILogger<AnilistBusinessService> _logger;
     private readonly IAnilistApiService  _anilistApiService;
+    private readonly HybridCache _hybridCache;
+    private readonly AppMemoryStore _appMemoryStore;
 
-    public AnilistBusinessService(ILogger<AnilistBusinessService> logger, IAnilistApiService anilistApiService)
+    public AnilistBusinessService(ILogger<AnilistBusinessService> logger, IAnilistApiService anilistApiService,
+        HybridCache hybridCache, AppMemoryStore appMemoryStore)
     {
         _logger = logger;
         _anilistApiService = anilistApiService;
+        _hybridCache = hybridCache;
+        _appMemoryStore = appMemoryStore;
     }
 
+    public async Task<Result<AnilistProfileDto>> GetCachedAnilistProfile()
+    {
+        try
+        {
+            var enableCaching = _appMemoryStore.GetCacheOption();
+
+            if (enableCaching == true)
+            {
+                var cachedData = await _hybridCache.GetOrCreateAsync(
+                    CacheKeys.AnilistUser,
+                    async cancellationToken =>
+                    {
+                        _logger.LogInformation("Cache miss - fetching latest Anilist profile data");
+                        return await FetchAnilistProfileFromApiConcurrently();
+                    },
+                    new HybridCacheEntryOptions
+                    {
+                        Expiration = TimeSpan.FromMinutes(30),
+                        LocalCacheExpiration = TimeSpan.FromMinutes(30)
+                    });
+                return Result<AnilistProfileDto>.AsSuccess(cachedData);
+            }
+            else
+            {
+                var profileData = await FetchAnilistProfileFromApiConcurrently();
+                return Result<AnilistProfileDto>.AsSuccess(profileData);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching Anilist profile");
+            return Result<AnilistProfileDto>.AsError(ex.Message);
+        }
+    }
+    
+
+    public async Task<AnilistProfileDto> FetchAnilistProfileFromApiConcurrently()
+    {
+        var anilistProfileDto = new AnilistProfileDto();
+        
+        var anilistProfileResult = await _anilistApiService.GetAnilistProfileStatistics();
+
+        if (anilistProfileResult.ResultOutcome == ResultEnum.Success)
+        {
+            anilistProfileDto.AnilistViewerStatistics = anilistProfileResult.Data;
+        }
+        return anilistProfileDto;
+    }
+    
+    // Legacy Test Call for Debugging
     public async Task<Result<AnilistProfileDto>> GetAnilistProfile()
     {
         try

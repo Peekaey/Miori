@@ -30,7 +30,7 @@ public class ProfileController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetSpotifyProfileData()
     {
-        var profileDtoResult = await _spotifyBusinessService.GetSpotifyProfile();
+        var profileDtoResult = await _spotifyBusinessService.GetCachedSpotifyProfile();
 
         if (profileDtoResult.ResultOutcome != ResultEnum.Success)
         {
@@ -43,7 +43,7 @@ public class ProfileController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetAnilistProfileData()
     {
-        var profileDtoResult = await _anilistBusinessService.GetAnilistProfile();
+        var profileDtoResult = await _anilistBusinessService.GetCachedAnilistProfile();
 
         if (profileDtoResult.ResultOutcome != ResultEnum.Success)
         {

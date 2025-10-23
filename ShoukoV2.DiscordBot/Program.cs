@@ -55,6 +55,7 @@ class Program
         ConfigureNetcordHost(host);
         MapSpotifyOauthEndpoints(host);
         MapAnilistOauthEndpoints(host);
+        MapAppMemoryStore(host);
         host.Run();
         Console.WriteLine("ShoukoV2 is running...");
     }
@@ -101,6 +102,7 @@ class Program
         builder.Services.AddSingleton<IDiscordRestService, DiscordRestService>();
         builder.Services.AddSingleton<AppMemoryStore>();
         builder.Services.AddHttpClient();
+        
         builder.Services.AddSingleton<ISpotifyApiService, SpotifyApiService>();
         builder.Services.AddSingleton<IAnilistApiService, AnilistApiService>();
 
@@ -117,7 +119,13 @@ class Program
         builder.Services.AddControllers();
 
         builder.Services.AddSingleton<IOauthHelpers, OauthHelpers>();
-
+        builder.Services.AddHybridCache();
+        
+        builder.Services.AddSingleton<BackgroundWorkerService>();
+        
+        builder.Services.AddSingleton<IBackgroundWorkerService>(provider => provider.GetRequiredService<BackgroundWorkerService>());
+        
+        builder.Services.AddHostedService<BackgroundWorkerService>(provider => provider.GetRequiredService<BackgroundWorkerService>());
     }
     
 
@@ -187,6 +195,12 @@ class Program
             var result = await oAuthHandler.HandleCallbackAsync(code, error);
             if (result.IsSuccess)
             {
+                var backgroundWorkerService = host.Services.GetService<IBackgroundWorkerService>();
+                if (backgroundWorkerService != null)
+                {
+                    await backgroundWorkerService.RefreshSpotifyDataCache();
+                }
+                
                 return Results.Content(OAuthResponseBuilder.BuildSuccessPage(), "text/html");
             }
             else
@@ -208,6 +222,12 @@ class Program
             var result = await oAuthHandler.HandleCallbackAsync(code, error);
             if (result.IsSuccess)
             {
+                var backgroundWorkerService = host.Services.GetService<IBackgroundWorkerService>();
+                if (backgroundWorkerService != null)
+                {
+                    await backgroundWorkerService.RefreshAnilistDataCache();
+                }
+                
                 return Results.Content(OAuthResponseBuilder.BuildSuccessPage(), "text/html");
             }
             else
@@ -216,6 +236,30 @@ class Program
             }
         });
     }
-    
+
+    private static void MapAppMemoryStore(WebApplication host)
+    {
+        var appMemoryStore = host.Services.GetService<AppMemoryStore>();
+        if (appMemoryStore != null)
+        {
+            var configuration = host.Services.GetService<IConfiguration>();
+            
+            var enableCachingResult = configuration["EnableCaching"];
+
+            if (enableCachingResult == null || enableCachingResult.ToLower() != "true" && enableCachingResult.ToLower() != "false")
+            {
+                throw new ArgumentException("EnableCaching option not specified or invalid parameter provided");
+            }
+            
+            if (enableCachingResult.ToLower() == "true")
+            {
+                appMemoryStore.SetCacheOption(true);
+            }
+            else
+            {
+                appMemoryStore.SetCacheOption(false);
+            }
+        }
+    }
     
 }

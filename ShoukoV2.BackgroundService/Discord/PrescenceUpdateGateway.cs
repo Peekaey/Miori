@@ -23,6 +23,9 @@ public class PrescenceUpdateGateway : IPresenceUpdateGatewayHandler
         _discordPresenceHub = discordPresenceHub;
     }
     
+    // When user presence activity changes
+    // HandleAsync is automatically executed with the newest presence data
+    // Map the presence data to a dto and then broadcast it via signalR
     public async ValueTask HandleAsync(Presence arg)
     {
         _logger.LogInformation("{}", arg);
