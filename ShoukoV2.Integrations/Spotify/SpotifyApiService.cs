@@ -32,8 +32,8 @@ public class SpotifyApiService : ISpotifyApiService
 
     public async Task<Result<string>> GetAccessToken()
     {
-        string? clientId = _configuration["Spotify:ClientId"];
-        string? clientSecret = _configuration["Spotify:ClientSecret"];
+        string? clientId = _configuration["SpotifyClientId"];
+        string? clientSecret = _configuration["SpotifyClientSecret"];
         if (clientId == null || clientSecret == null)
         {
             return Result<string>.AsError("Spotify client ID or secret is not configured");
@@ -121,8 +121,8 @@ public class SpotifyApiService : ISpotifyApiService
     // https://developer.spotify.com/documentation/web-api/tutorials/refreshing-tokens
     private async Task RefreshAccessToken()
     {
-        var clientId = _configuration["Spotify:ClientId"];
-        var clientSecret = _configuration["Spotify:ClientSecret"];
+        var clientId = _configuration["SpotifyClientId"];
+        var clientSecret = _configuration["SpotifyClientSecret"];
         var refreshToken = _appMemoryStore.SpotifyTokenStore.GetRefreshToken();
         var base64AuthHeader = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{clientId}:{clientSecret}"));
 

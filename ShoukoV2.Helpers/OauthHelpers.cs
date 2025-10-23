@@ -14,8 +14,8 @@ public class OauthHelpers : IOauthHelpers
     // https://docs.anilist.co/guide/auth/authorization-code
     public string GenerateAnilistAuthorisationUrl()
     {
-        var clientId = _configuration["Anilist:ClientId"];
-        var redirectUri = Uri.EscapeDataString(_configuration["Anilist:RedirectUri"]);
+        var clientId = _configuration["AnilistClientId"];
+        var redirectUri = Uri.EscapeDataString(_configuration["AnilistRedirectUri"]);
         
         return "https://anilist.co/api/v2/oauth/authorize?" +
                "client_id=" + clientId +
@@ -25,13 +25,13 @@ public class OauthHelpers : IOauthHelpers
     // https://developer.spotify.com/documentation/web-api/tutorials/code-flow
     public string GenerateSpotifyAuthorisationUrl()
     {
-        var clientId = _configuration["Spotify:ClientId"];
-        var redirectUri = Uri.EscapeDataString(_configuration["Spotify:RedirectUri"]);
+        var clientId = _configuration["SpotifyClientId"];
+        var redirectUri = Uri.EscapeDataString(_configuration["SpotifyRedirectUri"]);
         
         return "https://accounts.spotify.com/authorize?" +
                $"client_id={clientId}" +
                $"&response_type=code" +
                $"&redirect_uri={redirectUri}" +
-               $"&scope={Uri.EscapeDataString(_configuration["Spotify:Scope"])}";
+               $"&scope={Uri.EscapeDataString(_configuration["SpotifyScope"])}";
     }
 }

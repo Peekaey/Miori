@@ -6,3 +6,4 @@ riderModule.iml
 appsettings.json
 .idea
 .DS_Store
+docker-run.sh

@@ -47,7 +47,7 @@ class Program
         ValidateEnvironmentVariables(builder);
         
         builder.Configuration
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
             .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", 
                 optional: true, 
                 reloadOnChange: true)
@@ -74,7 +74,7 @@ class Program
     
     static void ConfigureNetCordBuilder(WebApplicationBuilder  builder)
     {
-        IEntityToken restClientToken = new BotToken(builder.Configuration["Discord:BotToken"]);
+        IEntityToken restClientToken = new BotToken(builder.Configuration["DiscordBotToken"]);
         builder.Services.AddDiscordGateway(options =>
             {
                 options.Intents = GatewayIntents.GuildMessages
@@ -84,7 +84,7 @@ class Program
                                   | GatewayIntents.Guilds
                                   | GatewayIntents.GuildPresences
                                   | GatewayIntents.GuildUsers;
-                options.Token = builder.Configuration["Discord:BotToken"];
+                options.Token = builder.Configuration["DiscordBotToken"];
             })
             .AddApplicationCommands()
             .AddGatewayHandler<PrescenceUpdateGateway>()
@@ -169,11 +169,15 @@ class Program
 
     static void AddOauthHandlerEndpoints(WebApplicationBuilder  builder)
     {
+        var port = builder.Configuration.GetValue<int>("NetworkPort", 5001);
+        
+        
         builder.Services.AddSingleton<ISpotifyOauthHandler, SpotifyOauthHandler>();
         builder.Services.AddSingleton<IAnilistOauthHandler, AnilistOauthHandler>();
         builder.WebHost.ConfigureKestrel(options =>
         {
-            options.ListenAnyIP(5001);
+            // options.ListenAnyIP(5001);
+            options.Listen(IPAddress.Any, 5001);
         });
     }
 
@@ -313,9 +317,9 @@ class Program
     private static void ConfigureRemoteLogging(WebApplicationBuilder builder)
     {
         // Even though these parameters would of been validated already, double check just in case
-        var lokiUrl = builder.Configuration["Loki:Url"];
-        var lokiUsername = builder.Configuration["Loki:Username"];
-        var lokiApiToken = builder.Configuration["Loki:ApiToken"];
+        var lokiUrl = builder.Configuration["LokiUrl"];
+        var lokiUsername = builder.Configuration["LokiUsername"];
+        var lokiApiToken = builder.Configuration["LokiApiToken"];
 
         if (string.IsNullOrEmpty(lokiUrl) || string.IsNullOrEmpty(lokiUsername) || string.IsNullOrEmpty(lokiApiToken))
         {
@@ -353,9 +357,9 @@ class Program
     {
         var configuration = builder.Configuration;
         
-        var discordBotToken = configuration["Discord:BotToken"];
-        var discordOwnerUserId = configuration["Discord:OwnerUserId"];
-        var discordOwnerGuildId = configuration["Discord:OwnerGuildId"];
+        var discordBotToken = configuration["DiscordBotToken"];
+        var discordOwnerUserId = configuration["DiscordOwnerUserId"];
+        var discordOwnerGuildId = configuration["DiscordOwnerGuildId"];
 
         if (string.IsNullOrEmpty(discordBotToken) || string.IsNullOrEmpty(discordOwnerUserId) ||
             string.IsNullOrEmpty(discordOwnerGuildId))
@@ -363,10 +367,10 @@ class Program
             throw new ArgumentException("Discord bot token, Discord owner userId, Discord owner guildId must be provided");
         }
         
-        var spotifyClientId = configuration["Spotify:ClientId"];
-        var spotifyClientSecret = configuration["Spotify:ClientSecret"];
-        var spotifyRedirectUri = configuration["Spotify:RedirectUri"];
-        var spotifyScopes = configuration["Spotify:Scope"];
+        var spotifyClientId = configuration["SpotifyClientId"];
+        var spotifyClientSecret = configuration["SpotifyClientSecret"];
+        var spotifyRedirectUri = configuration["SpotifyRedirectUri"];
+        var spotifyScopes = configuration["SpotifyScope"];
 
         if (string.IsNullOrEmpty(spotifyClientId) || string.IsNullOrEmpty(spotifyClientSecret) ||
             string.IsNullOrEmpty(spotifyRedirectUri) || string.IsNullOrEmpty(spotifyScopes))
@@ -374,9 +378,9 @@ class Program
             throw new ArgumentException("Spotify Client Id, Spotify Client Secret, Spotify Redirect Uri and Scope must be provided");
         }
         
-        var anilistClientId = configuration["Anilist:ClientId"];
-        var anilistClientSecret = configuration["Anilist:ClientSecret"];
-        var anilistRedirectUri = configuration["Anilist:RedirectUri"];
+        var anilistClientId = configuration["AnilistClientId"];
+        var anilistClientSecret = configuration["AnilistClientSecret"];
+        var anilistRedirectUri = configuration["AnilistRedirectUri"];
 
         if (string.IsNullOrEmpty(anilistClientId) || string.IsNullOrEmpty(anilistClientSecret) ||
             string.IsNullOrEmpty(anilistRedirectUri))
@@ -402,15 +406,31 @@ class Program
 
         if (enableRemoteLogging.ToLower() == "true")
         {
-            var lokiUsername = configuration["Loki:Username"];
-            var lokiApiToken = configuration["Loki:ApiToken"];
-            var lokiUrl = configuration["Loki:Url"];
+            var lokiUsername = configuration["LokiUsername"];
+            var lokiApiToken = configuration["LokiApiToken"];
+            var lokiUrl = configuration["LokiUrl"];
 
             if (string.IsNullOrEmpty(lokiUrl) || string.IsNullOrEmpty(lokiUsername) ||
                 string.IsNullOrEmpty(lokiApiToken))
             {
                 throw new ArgumentException("Endpoint, Username and ApiToken must be provided for Loki Instance");
             }
+        }
+        
+        var port = configuration["NetworkPort"];
+
+        if (string.IsNullOrEmpty(port))
+        {
+            throw new ArgumentException("NetworkPort must be provided");
+        }
+        else
+        {
+            // Attempt to parse to a number - throw an exception if not successful
+            if (!int.TryParse(port, out int portNumber))
+            {
+                throw new ArgumentException("Port must be a valid number");
+            }
+
         }
         
         

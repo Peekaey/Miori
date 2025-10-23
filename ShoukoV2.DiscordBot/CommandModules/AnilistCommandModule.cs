@@ -30,7 +30,7 @@ public class AnilistCommandModule : ApplicationCommandModule<ApplicationCommandC
         {
             await Context.Interaction.SendResponseAsync(InteractionCallback.DeferredMessage(MessageFlags.Ephemeral));
 
-            var ownerDiscordId = _configuration["Discord:OwnerUserId"];
+            var ownerDiscordId = _configuration["DiscordOwnerUserId"];
             var interactionOwnerId = Context.Interaction.User.Id;
 
             if (ownerDiscordId != interactionOwnerId.ToString())

@@ -34,8 +34,8 @@ public class DiscordBusinessService : IDiscordBusinessService
     {
         try
         {
-            ulong guildId = ulong.Parse(_configuration["Discord:OwnerGuildId"]);
-            ulong userId = ulong.Parse(_configuration["Discord:OwnerUserId"]);
+            ulong guildId = ulong.Parse(_configuration["DiscordOwnerGuildId"]);
+            ulong userId = ulong.Parse(_configuration["DiscordOwnerUserId"]);
 
             Presence? presence = await GetUserPresenceAsync(guildId, userId);
 

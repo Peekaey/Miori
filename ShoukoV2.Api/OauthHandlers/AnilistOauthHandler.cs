@@ -41,9 +41,9 @@ public class AnilistOauthHandler : IAnilistOauthHandler
             return OAuthCallbackResult.Error("Invalid request - No authorisation code received");
         }
         
-        var clientId = _configuration["Anilist:ClientId"];
-        var clientSecret = _configuration["Anilist:ClientSecret"];
-        var redirectUri = _configuration["Anilist:RedirectUri"];
+        var clientId = _configuration["AnilistClientId"];
+        var clientSecret = _configuration["AnilistClientSecret"];
+        var redirectUri = _configuration["AnilistRedirectUri"];
 
         if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
         {

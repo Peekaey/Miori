@@ -22,6 +22,4 @@
 ### TODO
 - Hardest security for api endpoints (rate limiting, headers, logging, etc)
 - Better structured logging
-- docker building/parameter passing
-- parameter validation
-- toggle for backgroundworker service if enable caching = false
+9

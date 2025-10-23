@@ -40,10 +40,10 @@ public class SpotifyOauthHandler : ISpotifyOauthHandler
             return OAuthCallbackResult.Error("Invalid request - No authorisation code received");
         }
 
-        var clientId = _configuration["Spotify:ClientId"];
-        var clientSecret = _configuration["Spotify:ClientSecret"];
-        var redirectUri = _configuration["Spotify:RedirectUri"];
-        var scope = _configuration["Spotify:Scope"];
+        var clientId = _configuration["SpotifyClientId"];
+        var clientSecret = _configuration["SpotifyClientSecret"];
+        var redirectUri = _configuration["SpotifyRedirectUri"];
+        var scope = _configuration["SpotifyScope"];
         if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
         {
             _logger.LogError("Spotify credentials not configured");
