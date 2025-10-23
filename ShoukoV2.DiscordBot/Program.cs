@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Net;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +15,9 @@ using NetCord.Hosting.Services;
 using NetCord.Hosting.Services.ApplicationCommands;
 using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
+using Serilog;
+using Serilog.Debugging;
+using Serilog.Sinks.Grafana.Loki;
 using ShoukoV2.Api;
 using ShoukoV2.Api.Anilist;
 using ShoukoV2.Api.SignalR;
@@ -38,6 +44,8 @@ class Program
         
         var builder = WebApplication.CreateBuilder(args);
         
+        ValidateEnvironmentVariables(builder);
+        
         builder.Configuration
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", 
@@ -45,12 +53,16 @@ class Program
                 reloadOnChange: true)
             .AddEnvironmentVariables();
         
-        
-        ValidateEnvironmentVariables(builder);
-        
         ConfigureNetCordBuilder(builder);
         ConfigureServices(builder);
         AddOauthHandlerEndpoints(builder);
+        
+        
+        if (builder.Configuration["EnableRemoteLogging"].ToLower() == "true")
+        {
+            ConfigureRemoteLogging(builder);
+        }
+        
         var host = builder.Build();
         ConfigureNetcordHost(host);
         MapSpotifyOauthEndpoints(host);
@@ -59,16 +71,7 @@ class Program
         host.Run();
         Console.WriteLine("ShoukoV2 is running...");
     }
-
-    static void ValidateEnvironmentVariables(WebApplicationBuilder builder)
-    {
-        var discordBotToken = builder.Configuration["Discord:BotToken"];
-        if (string.IsNullOrEmpty(discordBotToken))
-        {
-            throw new ArgumentException("DiscordBotToken is required", nameof(discordBotToken));
-        }
-    }
-
+    
     static void ConfigureNetCordBuilder(WebApplicationBuilder  builder)
     {
         IEntityToken restClientToken = new BotToken(builder.Configuration["Discord:BotToken"]);
@@ -121,12 +124,47 @@ class Program
         builder.Services.AddSingleton<IOauthHelpers, OauthHelpers>();
         builder.Services.AddHybridCache();
         
-        builder.Services.AddSingleton<BackgroundWorkerService>();
-        
-        builder.Services.AddSingleton<IBackgroundWorkerService>(provider => provider.GetRequiredService<BackgroundWorkerService>());
-        
-        builder.Services.AddHostedService<BackgroundWorkerService>(provider => provider.GetRequiredService<BackgroundWorkerService>());
+        var enableCaching = builder.Configuration["EnableCaching"];
+
+        // Only register the background service if enableCaching is enabled
+        if ( enableCaching != null && enableCaching.ToLower() == "true")
+        {
+            builder.Services.AddSingleton<BackgroundWorkerService>();
+            builder.Services.AddSingleton<IBackgroundWorkerService>(provider => provider.GetRequiredService<BackgroundWorkerService>());
+            builder.Services.AddHostedService<BackgroundWorkerService>(provider => provider.GetRequiredService<BackgroundWorkerService>());
+        }
+
     }
+
+    // https://stackoverflow.com/questions/75365849/using-rate-limiting-in-asp-net-core-7-web-api-by-ip-address
+    // Won't work if its behind cloudflare / reverse proxy
+    // Need to do more research/testing
+    // static void AddRateLimiting(WebApplicationBuilder builder)
+    // {
+    //     builder.Services.AddRateLimiter(options =>
+    //     {
+    //         options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, IPAddress>(context =>
+    //         {
+    //             IPAddress remoteIpAddress = context.Connection.RemoteIpAddress;
+    //
+    //             if (!IPAddress.IsLoopback(remoteIpAddress))
+    //             {
+    //                 return RateLimitPartition.GetTokenBucketLimiter(
+    //                     remoteIpAddress!, _ => new TokenBucketRateLimiterOptions
+    //                     {
+    //                         TokenLimit = 10,
+    //                         QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+    //                         QueueLimit = 10,
+    //                         ReplenishmentPeriod = TimeSpan.FromSeconds(60),
+    //                         TokensPerPeriod = 10,
+    //                         AutoReplenishment = true
+    //                     });
+    //             }
+    //
+    //             return RateLimitPartition.GetNoLimiter(IPAddress.Loopback);
+    //         });
+    //     });
+    // }
     
 
     static void AddOauthHandlerEndpoints(WebApplicationBuilder  builder)
@@ -151,6 +189,11 @@ class Program
             {
                 // Execute Post Startup Utilities
                 Console.WriteLine("----------ShoukoV2 Startup Complete---------");
+
+                if (host.Configuration["EnableRemoteLogging"].ToLower() == "true")
+                {
+                    TestLogging(host);
+                }
             }
             catch (Exception e)
             {
@@ -162,26 +205,26 @@ class Program
         
     }
     
-    
-    private static void ConfigureDatabaseService(WebApplicationBuilder  builder)
-    {
-        string postgresConnectionString = builder.Configuration["DatabaseConnectionString"];
-        
-        if (string.IsNullOrEmpty(postgresConnectionString))
-        {
-            throw new ArgumentException("Postgres connection string is not configured.", nameof(postgresConnectionString));
-        }
-
-        builder.Services.AddDbContext<DataContext>(options =>
-        {
-            options.UseNpgsql(postgresConnectionString, npgsqlOptions =>
-            {
-                npgsqlOptions.MigrationsAssembly("ShoukoV2.DataService");
-            });
-            options.UseNpgsql(postgresConnectionString)
-                .LogTo(Console.WriteLine, LogLevel.Information);
-        });
-    }
+    // No need for persistant database at this stage
+    // private static void ConfigureDatabaseService(WebApplicationBuilder  builder)
+    // {
+    //     string postgresConnectionString = builder.Configuration["DatabaseConnectionString"];
+    //     
+    //     if (string.IsNullOrEmpty(postgresConnectionString))
+    //     {
+    //         throw new ArgumentException("Postgres connection string is not configured.", nameof(postgresConnectionString));
+    //     }
+    //
+    //     builder.Services.AddDbContext<DataContext>(options =>
+    //     {
+    //         options.UseNpgsql(postgresConnectionString, npgsqlOptions =>
+    //         {
+    //             npgsqlOptions.MigrationsAssembly("ShoukoV2.DataService");
+    //         });
+    //         options.UseNpgsql(postgresConnectionString)
+    //             .LogTo(Console.WriteLine, LogLevel.Information);
+    //     });
+    // }
 
     private static void MapSpotifyOauthEndpoints(WebApplication host)
     {
@@ -195,12 +238,14 @@ class Program
             var result = await oAuthHandler.HandleCallbackAsync(code, error);
             if (result.IsSuccess)
             {
-                var backgroundWorkerService = host.Services.GetService<IBackgroundWorkerService>();
-                if (backgroundWorkerService != null)
+                if (host.Configuration["EnableCaching"].ToLower() == "true")
                 {
-                    await backgroundWorkerService.RefreshSpotifyDataCache();
+                    var backgroundWorkerService = host.Services.GetService<IBackgroundWorkerService>();
+                    if (backgroundWorkerService != null)
+                    {
+                        await backgroundWorkerService.RefreshSpotifyDataCache();
+                    }
                 }
-                
                 return Results.Content(OAuthResponseBuilder.BuildSuccessPage(), "text/html");
             }
             else
@@ -222,12 +267,15 @@ class Program
             var result = await oAuthHandler.HandleCallbackAsync(code, error);
             if (result.IsSuccess)
             {
-                var backgroundWorkerService = host.Services.GetService<IBackgroundWorkerService>();
-                if (backgroundWorkerService != null)
+                if (host.Configuration["EnableCaching"].ToLower() == "true")
                 {
-                    await backgroundWorkerService.RefreshAnilistDataCache();
+                    var backgroundWorkerService = host.Services.GetService<IBackgroundWorkerService>();
+                    if (backgroundWorkerService != null)
+                    {
+                        await backgroundWorkerService.RefreshAnilistDataCache();
+                    }
                 }
-                
+
                 return Results.Content(OAuthResponseBuilder.BuildSuccessPage(), "text/html");
             }
             else
@@ -262,4 +310,109 @@ class Program
         }
     }
     
+    private static void ConfigureRemoteLogging(WebApplicationBuilder builder)
+    {
+        // Even though these parameters would of been validated already, double check just in case
+        var lokiUrl = builder.Configuration["Loki:Url"];
+        var lokiUsername = builder.Configuration["Loki:Username"];
+        var lokiApiToken = builder.Configuration["Loki:ApiToken"];
+
+        if (string.IsNullOrEmpty(lokiUrl) || string.IsNullOrEmpty(lokiUsername) || string.IsNullOrEmpty(lokiApiToken))
+        {
+            throw new ArgumentException("LokiUrl,LokiUsername and lokiApiToken must be provided if EnableRemoteLogging set to true");
+        }
+
+        builder.Host.UseSerilog((context, configuration) =>
+            configuration
+                .WriteTo.Console()
+                .WriteTo.GrafanaLoki(
+                    lokiUrl,
+                    labels: new List<LokiLabel>
+                    {
+                        new() { Key = "app", Value = "ShoukoV2" },
+                    },
+                    credentials: new LokiCredentials
+                    {
+                        Login = lokiUsername,
+                        Password =  lokiApiToken
+                    }));
+        
+    }
+
+    private static void TestLogging(WebApplication host)
+    {
+        var logger = host.Services.GetRequiredService<ILogger<Program>>();
+        
+        logger.LogInformation("Application starting - Test log message");
+        logger.LogWarning("This is a warning message for testing");
+        logger.LogError("This is an error message for testing");
+    }
+
+
+    public static void ValidateEnvironmentVariables(WebApplicationBuilder builder)
+    {
+        var configuration = builder.Configuration;
+        
+        var discordBotToken = configuration["Discord:BotToken"];
+        var discordOwnerUserId = configuration["Discord:OwnerUserId"];
+        var discordOwnerGuildId = configuration["Discord:OwnerGuildId"];
+
+        if (string.IsNullOrEmpty(discordBotToken) || string.IsNullOrEmpty(discordOwnerUserId) ||
+            string.IsNullOrEmpty(discordOwnerGuildId))
+        {
+            throw new ArgumentException("Discord bot token, Discord owner userId, Discord owner guildId must be provided");
+        }
+        
+        var spotifyClientId = configuration["Spotify:ClientId"];
+        var spotifyClientSecret = configuration["Spotify:ClientSecret"];
+        var spotifyRedirectUri = configuration["Spotify:RedirectUri"];
+        var spotifyScopes = configuration["Spotify:Scope"];
+
+        if (string.IsNullOrEmpty(spotifyClientId) || string.IsNullOrEmpty(spotifyClientSecret) ||
+            string.IsNullOrEmpty(spotifyRedirectUri) || string.IsNullOrEmpty(spotifyScopes))
+        {
+            throw new ArgumentException("Spotify Client Id, Spotify Client Secret, Spotify Redirect Uri and Scope must be provided");
+        }
+        
+        var anilistClientId = configuration["Anilist:ClientId"];
+        var anilistClientSecret = configuration["Anilist:ClientSecret"];
+        var anilistRedirectUri = configuration["Anilist:RedirectUri"];
+
+        if (string.IsNullOrEmpty(anilistClientId) || string.IsNullOrEmpty(anilistClientSecret) ||
+            string.IsNullOrEmpty(anilistRedirectUri))
+        {
+            throw new ArgumentException("Anilist Client Id, Anilist Client Secret, Anilist Redirect Uri must be provided");
+        }
+        
+        var enableCaching = configuration["EnableCaching"];
+
+        if (string.IsNullOrEmpty(enableCaching) ||
+            enableCaching.ToLower() != "true" && enableCaching.ToLower() != "false")
+        {
+            throw new ArgumentException("EnableCaching option not specified or invalid parameter provided - must be provided and set to true or false");
+        }
+        
+        var enableRemoteLogging = configuration["EnableRemoteLogging"];
+
+        if (string.IsNullOrEmpty(enableRemoteLogging) ||
+            enableRemoteLogging.ToLower() != "true" && enableRemoteLogging.ToLower() != "false")
+        {
+            throw new ArgumentException("EnableRemoteLogging option not specified or invalid parameter provided - must be provided and set to true or false");
+        }
+
+        if (enableRemoteLogging.ToLower() == "true")
+        {
+            var lokiUsername = configuration["Loki:Username"];
+            var lokiApiToken = configuration["Loki:ApiToken"];
+            var lokiUrl = configuration["Loki:Url"];
+
+            if (string.IsNullOrEmpty(lokiUrl) || string.IsNullOrEmpty(lokiUsername) ||
+                string.IsNullOrEmpty(lokiApiToken))
+            {
+                throw new ArgumentException("Endpoint, Username and ApiToken must be provided for Loki Instance");
+            }
+        }
+        
+        
+    }
 }

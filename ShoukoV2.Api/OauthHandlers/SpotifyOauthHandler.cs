@@ -87,9 +87,7 @@ public class SpotifyOauthHandler : ISpotifyOauthHandler
         if (tokenResponse != null)
         {
             _appMemoryStore.SpotifyTokenStore.RegisterAccessToken(tokenResponse.access_token, tokenResponse.refresh_token, TokenType.Bearer);
-            _logger.LogInformation("Access Token" + tokenResponse.access_token);
-            _logger.LogInformation("Refresh Token" + tokenResponse.refresh_token);
-
+            
             // TODO hacky -> Implement a proper background service in the future
             await _spotifyApiService.RegisterSpotifyUserId();
             

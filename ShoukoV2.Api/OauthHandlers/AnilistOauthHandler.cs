@@ -81,9 +81,7 @@ public class AnilistOauthHandler : IAnilistOauthHandler
         if (tokenResponse != null)
         {
             _appMemoryStore.AnilistTokenStore.RegisterAccessToken(tokenResponse.access_token, tokenResponse.refresh_token);
-            _logger.LogInformation("Access Token" + tokenResponse.access_token);
-            _logger.LogInformation("Refresh Token" + tokenResponse.refresh_token);
-
+            
             await _anilistApiService.GetAnilistProfileInfo();
         }
         

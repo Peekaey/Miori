@@ -29,6 +29,7 @@ public class DiscordBusinessService : IDiscordBusinessService
 
     // As the application is currently only intended get the data off a single guild/user
     // Hardcore the values for now
+    // no need for caching as presence is realtime
     public async Task<Result<DiscordRichPresenceSocketDto>> GetDiscordPresence()
     {
         try

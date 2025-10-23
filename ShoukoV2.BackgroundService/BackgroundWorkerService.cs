@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShoukoV2.BusinessService.Interfaces;
@@ -13,15 +14,16 @@ public class BackgroundWorkerService : Microsoft.Extensions.Hosting.BackgroundSe
     private readonly IServiceScopeFactory  _scopeFactory;
     private readonly TimeProvider _timeProvider;
     private readonly HybridCache _hybridCache;
-
+    private readonly IConfiguration _configuration;
     
     public BackgroundWorkerService(ILogger<BackgroundWorkerService> logger, IServiceScopeFactory scopeFactory, TimeProvider timeProvider,
-        HybridCache hybridCache)
+        HybridCache hybridCache, IConfiguration configuration)
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
         _timeProvider = timeProvider;
         _hybridCache = hybridCache;
+        _configuration = configuration;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
