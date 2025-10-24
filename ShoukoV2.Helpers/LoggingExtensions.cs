@@ -70,9 +70,30 @@ public static class LoggingExtensions
     {
         logger.LogError(exception, "Application error occured at {timeUtc} with error: {errorMessage}", timeUtc, errorMessage);
     }
-    
+
     public static void LogApplicationMessage(this ILogger logger, DateTime timeUtc, string message)
-    {}
-    
-    
+    {
+        logger.LogInformation("{message} at: {timeUtc}", message, timeUtc);
+    }
+
+    public static void LogApiRequestStart(this ILogger logger, DateTime timeUtc, string requestId, string endpoint,
+        string clientIp, string userAgent)
+    {
+        logger.LogInformation("Starting {endpoint} request at: {timeUtc}. RequestId: {requestId}, ClientIP: {clientIp}, UserAgent: {userAgent}",
+            endpoint, timeUtc, requestId, clientIp, userAgent);
+    }
+
+    public static void LogApiRequestEnd(this ILogger logger, DateTime timeUtc, string requestId, string endpoint,
+        TimeSpan duration, int statusCode, Exception? exception = null)
+    {
+        if (exception != null)
+        {
+            logger.LogError(exception, "Completed {endpoint} request with error at: {timeUtc}. RequestId: {requestId}, Duration: {duration}ms , StatusCode: {statusCode} ",
+                endpoint, timeUtc, requestId, duration.Milliseconds, statusCode);
+        }
+        else
+        {
+            logger.LogInformation("Completed {endpoint} request successfully at: {timeUtc}. RequestId: {requestId}, Duration: {duration}ms, StatusCode: {statusCode}", endpoint, timeUtc, requestId, duration.Milliseconds, statusCode);
+        }
+    }
 }

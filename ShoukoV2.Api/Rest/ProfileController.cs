@@ -1,13 +1,13 @@
-using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ShoukoV2.BusinessService.Interfaces;
 using ShoukoV2.Models.Enums;
 
-namespace ShoukoV2.Api;
+namespace ShoukoV2.Api.Rest;
 
 [ApiController]
+[RequestLoggingFilter]
 [Route("api/v1/[Controller]")]
 public class ProfileController : ControllerBase
 {
@@ -16,14 +16,18 @@ public class ProfileController : ControllerBase
     private readonly ISpotifyBusinessService _spotifyBusinessService;
     private readonly IUnraidBusinessService _unraidBusinessService;
     private readonly IDiscordBusinessService _discordBusinessService;
+    private readonly IAggregateBusinessService _aggregateBusinessService;
 
-    public ProfileController(ILogger<ProfileController> logger, IAnilistBusinessService anilistBusinessService, ISpotifyBusinessService spotifyBusinessService, IUnraidBusinessService unraidBusinessService, IDiscordBusinessService discordBusinessService)
+    public ProfileController(ILogger<ProfileController> logger, IAnilistBusinessService anilistBusinessService, 
+        ISpotifyBusinessService spotifyBusinessService, IUnraidBusinessService unraidBusinessService, 
+        IDiscordBusinessService discordBusinessService, IAggregateBusinessService aggregateBusinessService)
     {
         _logger = logger;
         _anilistBusinessService = anilistBusinessService;
         _spotifyBusinessService = spotifyBusinessService;
         _unraidBusinessService = unraidBusinessService;
         _discordBusinessService = discordBusinessService;
+        _aggregateBusinessService = aggregateBusinessService;
     }
 
     [HttpGet("spotify")]
@@ -63,6 +67,19 @@ public class ProfileController : ControllerBase
             return StatusCode(500, "Internal error occured when attempting to get discord presence data");
         }
         return Ok(presenceResult.Data);
+    }
+
+    [HttpGet("all")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAll()
+    {
+        var allResult = await _aggregateBusinessService.GetAllProfileDataDto();
+
+        if (allResult.ResultOutcome != ResultEnum.Success)
+        {
+            return StatusCode(500, "Internal error occured when attempting to get all profile data");
+        }
+        return Ok(allResult.Data);
     }
     
 }

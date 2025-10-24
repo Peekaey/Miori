@@ -102,6 +102,7 @@ class Program
         builder.Services.AddSingleton<IDiscordBusinessService, DiscordBusinessService>();
         builder.Services.AddSingleton<ISpotifyBusinessService, SpotifyBusinessService>();
         builder.Services.AddSingleton<IUnraidBusinessService, UnraidBusinessService>();
+        builder.Services.AddSingleton<IAggregateBusinessService, AggregateBusinessService>();
         
         builder.Services.AddSingleton<IDiscordGatewayService, DiscordGatewayService>();
         builder.Services.AddSingleton<IDiscordRestService, DiscordRestService>();
@@ -127,33 +128,9 @@ class Program
     }
 
     // https://stackoverflow.com/questions/75365849/using-rate-limiting-in-asp-net-core-7-web-api-by-ip-address
-    // Won't work if its behind cloudflare / reverse proxy
     // Need to do more research/testing
     // static void AddRateLimiting(WebApplicationBuilder builder)
     // {
-    //     builder.Services.AddRateLimiter(options =>
-    //     {
-    //         options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, IPAddress>(context =>
-    //         {
-    //             IPAddress remoteIpAddress = context.Connection.RemoteIpAddress;
-    //
-    //             if (!IPAddress.IsLoopback(remoteIpAddress))
-    //             {
-    //                 return RateLimitPartition.GetTokenBucketLimiter(
-    //                     remoteIpAddress!, _ => new TokenBucketRateLimiterOptions
-    //                     {
-    //                         TokenLimit = 10,
-    //                         QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-    //                         QueueLimit = 10,
-    //                         ReplenishmentPeriod = TimeSpan.FromSeconds(60),
-    //                         TokensPerPeriod = 10,
-    //                         AutoReplenishment = true
-    //                     });
-    //             }
-    //
-    //             return RateLimitPartition.GetNoLimiter(IPAddress.Loopback);
-    //         });
-    //     });
     // }
     
 
