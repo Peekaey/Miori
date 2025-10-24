@@ -65,8 +65,4 @@ public class ProfileController : ControllerBase
         return Ok(presenceResult.Data);
     }
     
-    
-    
-    
-    
 }

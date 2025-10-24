@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using ShoukoV2.Helpers;
 using ShoukoV2.Integrations.Anilist.Interfaces;
 using ShoukoV2.Models;
 using ShoukoV2.Models.Anilist;
@@ -17,45 +18,6 @@ public class AnilistApiService : IAnilistApiService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly AppMemoryStore _appMemoryStore;
     private readonly string _apiEndpoint = "https://graphql.anilist.co";
-
-    // TODO figure out a better way to store these graphql queries
-    private readonly string _currentUserQuery =
-        @"
-        query {
-          Viewer {
-            id
-            name
-            avatar {
-              large
-            }
-            bannerImage
-          }
-        }";
-
-    private readonly string _currentUserStatistics =
-        @"
-        query {
-          Viewer {
-            id
-            name
-            avatar {
-              large
-            }
-            bannerImage
-            statistics {
-              anime {
-                count
-                meanScore
-                volumesRead
-              }
-              manga {
-                chaptersRead
-                count
-                meanScore
-              }
-            }
-          }
-        }";
     
     public AnilistApiService(ILogger<AnilistApiService> logger, IConfiguration configuration,
         IHttpClientFactory httpClientFactory,
@@ -72,19 +34,19 @@ public class AnilistApiService : IAnilistApiService
     // Refresh Tokens are not currently supported. Once a token expires, you will need to re-authenticate your users
     // Access Tokens are long-lived. They will remain valid for 1 year from the time they are issued.
     // Therefore we do not need to build token refresh functionality
-    
     public async Task<Result<AnilistViewerResponse>> GetAnilistProfileInfo()
     {
         var bearerToken = _appMemoryStore.AnilistTokenStore.GetAccessToken();
 
         if (string.IsNullOrEmpty(bearerToken))
         {
-            return Result<AnilistViewerResponse>.AsFailure("Bearer token not found");
+            _logger.LogApplicationError(DateTime.UtcNow,"Anilist Bearer token not found. User needs to authenticate first");
+            return Result<AnilistViewerResponse>.AsFailure("Anilist Bearer token not found. User needs to authenticate first");
         }
         
         var requestBody = new
         {
-            query = _currentUserQuery,
+            query = AnilistQueries._currentUserQuery,
         };
         
         var json = JsonSerializer.Serialize(requestBody);
@@ -100,16 +62,18 @@ public class AnilistApiService : IAnilistApiService
 
         if (!response.IsSuccessStatusCode)
         {
-            return Result<AnilistViewerResponse>.AsError("Unsuccessfull response from Anilist Api");
+            _logger.LogApplicationError(DateTime.UtcNow, "Unsuccessful response from Anilist API when attempting to basic profile info");
+            return Result<AnilistViewerResponse>.AsError("Unsuccessful response from Anilist API when attempting to basic profile info");
         }
         
         var responseString = await response.Content.ReadAsStringAsync();
         var responseObject = JsonSerializer.Deserialize<AnilistViewerResponse>(responseString);
         if (responseObject == null)
         {
-            return Result<AnilistViewerResponse>.AsError("Failed to deserialise the response");
+            _logger.LogApplicationError(DateTime.UtcNow, "Failed to deserialise the response from the Anilist API");
+            return Result<AnilistViewerResponse>.AsError("Failed to deserialise the response from the Anilist API");
         }
-        
+        _logger.LogInformation("Successfully got access token from Spotify API");
         return Result<AnilistViewerResponse>.AsSuccess(responseObject);
     }
     
@@ -119,12 +83,13 @@ public class AnilistApiService : IAnilistApiService
 
         if (string.IsNullOrEmpty(bearerToken))
         {
-            return Result<AnilistViewerStatisticsResponse>.AsFailure("Bearer token not found");
+            _logger.LogApplicationError(DateTime.UtcNow,"Anilist Bearer token not found. User needs to authenticate first");
+            return Result<AnilistViewerStatisticsResponse>.AsFailure("Anilist Bearer token not found. User needs to authenticate first");
         }
         
         var requestBody = new
         {
-            query = _currentUserStatistics
+            query = AnilistQueries._currentUserStatistics
         };
         
         var json = JsonSerializer.Serialize(requestBody);
@@ -140,19 +105,19 @@ public class AnilistApiService : IAnilistApiService
 
         if (!response.IsSuccessStatusCode)
         {
-            return Result<AnilistViewerStatisticsResponse>.AsError("Unsuccessful response from Anilist Api");
+            _logger.LogApplicationError(DateTime.UtcNow, "Unsuccessful response from Anilist API when attempting to profile info");
+            return Result<AnilistViewerStatisticsResponse>.AsError("Unsuccessful response from Anilist API when attempting to profile info");
         }
         
         var responseString = await response.Content.ReadAsStringAsync();
         var responseObject = JsonSerializer.Deserialize<AnilistViewerStatisticsResponse>(responseString);
         if (responseObject == null)
         {
-            return Result<AnilistViewerStatisticsResponse>.AsError("Failed to deserialise the response");
+            _logger.LogApplicationError(DateTime.UtcNow, "Failed to deserialise the response from the Anilist API");
+            return Result<AnilistViewerStatisticsResponse>.AsError("Failed to deserialise the response from the Anilist API");
         }
-        
+        _logger.LogInformation("Successfully got Anilist Profile Statistics");
         return Result<AnilistViewerStatisticsResponse>.AsSuccess(responseObject);
     }
     
-    
-
 }

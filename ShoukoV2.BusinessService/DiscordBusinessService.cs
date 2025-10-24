@@ -5,6 +5,7 @@ using NetCord.Gateway;
 using ShoukoV2.BackgroundService;
 using ShoukoV2.BusinessService.Interfaces;
 using ShoukoV2.DiscordBot.Internal.Interfaces;
+using ShoukoV2.Helpers;
 using ShoukoV2.Helpers.Discord;
 using ShoukoV2.Models;
 using ShoukoV2.Models.Discord;
@@ -41,13 +42,15 @@ public class DiscordBusinessService : IDiscordBusinessService
 
             if (presence == null)
             {
-                return Result<DiscordRichPresenceSocketDto>.AsError("Unable to obtain presence of user");
+                _logger.LogApplicationError(DateTime.UtcNow, "Failed to get user presence");
+                return Result<DiscordRichPresenceSocketDto>.AsError("Failed to get user presence");
             }
             
             return Result<DiscordRichPresenceSocketDto>.AsSuccess(presence.MapToDto());
         }
         catch (Exception ex)
         {
+            _logger.LogApplicationException(DateTime.UtcNow, ex, "Error fetching presence of discord user");
             return Result<DiscordRichPresenceSocketDto>.AsError(ex.Message);
         }
     }

@@ -2,7 +2,9 @@ using NetCord;
 using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
 using ShoukoV2.Api.Anilist;
+using ShoukoV2.Helpers;
 using ShoukoV2.Helpers.Oauth;
+using ShoukoV2.Models;
 
 namespace ShoukoV2.Interactions.Interactions;
 
@@ -26,6 +28,10 @@ public class AnilistCommandModule : ApplicationCommandModule<ApplicationCommandC
     [SlashCommand("authenticate-with-anilist", "authenticate with anilist oauth")]
     public async Task SendAnilistAuthenticationLink()
     {
+        var contextWrapper = new ContextWrapper(Context.Interaction, "authenticate-with-spotify");
+        _logger.LogInteractionStart(contextWrapper.CommandName, contextWrapper.UserName, contextWrapper.UserId, contextWrapper.InteractionId, 
+            contextWrapper.InteractionTimeUtc,contextWrapper.GuildId);
+
         try
         {
             await Context.Interaction.SendResponseAsync(InteractionCallback.DeferredMessage(MessageFlags.Ephemeral));
@@ -35,6 +41,9 @@ public class AnilistCommandModule : ApplicationCommandModule<ApplicationCommandC
 
             if (ownerDiscordId != interactionOwnerId.ToString())
             {
+                _logger.LogInteractionEnd(contextWrapper.CommandName, contextWrapper.UserName, contextWrapper.UserId,
+                    contextWrapper.InteractionId, contextWrapper.InteractionTimeUtc, contextWrapper.GuildId);
+                
                 await Context.Interaction.SendFollowupMessageAsync(new InteractionMessageProperties
                 {
                     Content = "This user is not allowed to execute this command",
@@ -44,6 +53,10 @@ public class AnilistCommandModule : ApplicationCommandModule<ApplicationCommandC
             else
             {
                 var authUrl = _oauthHelpers.GenerateAnilistAuthorisationUrl();
+                
+                _logger.LogInteractionEnd(contextWrapper.CommandName, contextWrapper.UserName, contextWrapper.UserId,
+                    contextWrapper.InteractionId, contextWrapper.InteractionTimeUtc, contextWrapper.GuildId);
+                
                 await Context.Interaction.SendFollowupMessageAsync(new InteractionMessageProperties
                 {
                     Content = authUrl,
@@ -53,6 +66,9 @@ public class AnilistCommandModule : ApplicationCommandModule<ApplicationCommandC
         }
         catch (Exception e)
         {
+            _logger.LogInteractionException(e,contextWrapper.CommandName, contextWrapper.UserName, contextWrapper.UserId,
+                contextWrapper.InteractionId, contextWrapper.InteractionTimeUtc, contextWrapper.GuildId);
+            
             await Context.Interaction.SendFollowupMessageAsync(new InteractionMessageProperties
             {
                 Content = "Unexpected error when running authenticate with anilist command",

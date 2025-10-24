@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 using ShoukoV2.BusinessService.Interfaces;
+using ShoukoV2.Helpers;
 using ShoukoV2.Integrations.Anilist.Interfaces;
 using ShoukoV2.Models;
 using ShoukoV2.Models.Anilist;
@@ -37,7 +38,7 @@ public class AnilistBusinessService : IAnilistBusinessService
                     CacheKeys.AnilistUser,
                     async cancellationToken =>
                     {
-                        _logger.LogInformation("Cache miss - fetching latest Anilist profile data");
+                        _logger.LogApplicationMessage(DateTime.UtcNow, "Cache miss - fetching latest Anilist profile data...");
                         return await FetchAnilistProfileFromApiConcurrently();
                     },
                     new HybridCacheEntryOptions
@@ -55,7 +56,7 @@ public class AnilistBusinessService : IAnilistBusinessService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error fetching Anilist profile");
+            _logger.LogApplicationException(DateTime.UtcNow, ex, "Error fetching Anilist profile data");
             return Result<AnilistProfileDto>.AsError(ex.Message);
         }
     }
@@ -91,6 +92,7 @@ public class AnilistBusinessService : IAnilistBusinessService
         }
         catch (Exception ex)
         {
+            _logger.LogApplicationException(DateTime.UtcNow, ex, "Error fetching anilist profile data");
             return Result<AnilistProfileDto>.AsError(ex.Message);
         }
     }

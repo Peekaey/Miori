@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using ShoukoV2.Helpers;
 using ShoukoV2.Integrations.Anilist;
 using ShoukoV2.Integrations.Anilist.Interfaces;
 using ShoukoV2.Models.Anilist;
@@ -31,60 +32,75 @@ public class AnilistOauthHandler : IAnilistOauthHandler
 
     public async Task<OAuthCallbackResult> HandleCallbackAsync(string? code, string? error)
     {
-        if (!string.IsNullOrEmpty(error))
+        try
         {
-            _logger.LogError("Anilist Oauth error: {}", error);
-        }
+            if (!string.IsNullOrEmpty(error))
+            {
+                _logger.LogError("Anilist Oauth error: {}", error);
+            }
 
-        if (string.IsNullOrEmpty(code))
-        {
-            return OAuthCallbackResult.Error("Invalid request - No authorisation code received");
-        }
-        
-        var clientId = _configuration["AnilistClientId"];
-        var clientSecret = _configuration["AnilistClientSecret"];
-        var redirectUri = _configuration["AnilistRedirectUri"];
+            if (string.IsNullOrEmpty(code))
+            {
+                return OAuthCallbackResult.Error("Invalid request - No authorisation code received");
+            }
 
-        if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
-        {
-            _logger.LogError("Anilist credentials not configured");
-            return OAuthCallbackResult.Error("Server configuration error");
-        }
+            var clientId = _configuration["AnilistClientId"];
+            var clientSecret = _configuration["AnilistClientSecret"];
+            var redirectUri = _configuration["AnilistRedirectUri"];
 
-        var tokenRequest = new Dictionary<string, string>
-        {
-            ["client_id"] = clientId,
-            ["client_secret"] = clientSecret,
-            ["redirect_uri"] = redirectUri,
-            ["code"] = code,
-            ["grant_type"] = "authorization_code"
-        };
-        var jsonTokenRequest = JsonSerializer.Serialize(tokenRequest);
+            if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
+            {
+                _logger.LogError("Anilist credentials not configured");
+                return OAuthCallbackResult.Error("Server configuration error");
+            }
 
-        var httpClient = _httpClientFactory.CreateClient();
-        var request = new HttpRequestMessage(HttpMethod.Post, "https://anilist.co/api/v2/oauth/token")
-        {
-            Content = new StringContent(jsonTokenRequest)
-        };
-        request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-        
-        var response = await httpClient.SendAsync(request);
+            var tokenRequest = new Dictionary<string, string>
+            {
+                ["client_id"] = clientId,
+                ["client_secret"] = clientSecret,
+                ["redirect_uri"] = redirectUri,
+                ["code"] = code,
+                ["grant_type"] = "authorization_code"
+            };
+            var jsonTokenRequest = JsonSerializer.Serialize(tokenRequest);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorContent = await response.Content.ReadAsStringAsync();
-            _logger.LogError("Token exchange failed: {StatusCode} - {Content}", response.StatusCode, errorContent);
-            return  OAuthCallbackResult.Error("Token Exchange Failed");
-        }
+            var httpClient = _httpClientFactory.CreateClient();
+            var request = new HttpRequestMessage(HttpMethod.Post, "https://anilist.co/api/v2/oauth/token")
+            {
+                Content = new StringContent(jsonTokenRequest)
+            };
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-        var tokenResponse = await response.Content.ReadFromJsonAsync<AnilistTokenResponse>();
-        if (tokenResponse != null)
-        {
-            _appMemoryStore.AnilistTokenStore.RegisterAccessToken(tokenResponse.access_token, tokenResponse.refresh_token);
+            var response = await httpClient.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                string errorMessage = $"Token exchange failed: {response.StatusCode} - {errorContent}";
+                _logger.LogApplicationError(DateTime.UtcNow, errorMessage);
+                return OAuthCallbackResult.Error("Token Exchange Failed");
+            }
+
+            var tokenResponse = await response.Content.ReadFromJsonAsync<AnilistTokenResponse>();
             
-            await _anilistApiService.GetAnilistProfileInfo();
+            if (tokenResponse != null)
+            {
+                _appMemoryStore.AnilistTokenStore.RegisterAccessToken(tokenResponse.access_token,
+                    tokenResponse.refresh_token);
+
+                await _anilistApiService.GetAnilistProfileInfo();
+                
+                _logger.LogApplicationMessage(DateTime.UtcNow, "Anilist access token & user registered");
+                return OAuthCallbackResult.Success();
+            }
+            
+            _logger.LogApplicationError(DateTime.UtcNow, "Failed to parse AnilistOauthHandler token response");
+            return OAuthCallbackResult.Error("Failed to parse token response");
         }
-        
-        return OAuthCallbackResult.Success();
+        catch (Exception ex)
+        {
+            _logger.LogApplicationException(DateTime.UtcNow, ex, "SpotifyOauthHandler");
+            return OAuthCallbackResult.Error(ex.Message);
+        }
     }
 }

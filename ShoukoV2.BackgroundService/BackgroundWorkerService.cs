@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShoukoV2.BusinessService.Interfaces;
+using ShoukoV2.Helpers;
 using ShoukoV2.Models;
 using ShoukoV2.Models.Enums;
 
@@ -40,9 +41,10 @@ public class BackgroundWorkerService : Microsoft.Extensions.Hosting.BackgroundSe
                     await RefreshAllCachesAsync();
                 }
             }
-            catch (OperationCanceledException)
+            catch (Exception ex)
             {
-                _logger.LogInformation("Background Service is stopping...");
+                _logger.LogApplicationException(DateTime.UtcNow, ex, "Exception from Background Worker Service");
+                _logger.LogCritical("Background Service is stopping...");
             }
         }
     }
@@ -85,19 +87,21 @@ public class BackgroundWorkerService : Microsoft.Extensions.Hosting.BackgroundSe
                             Expiration = TimeSpan.FromMinutes(30),
                             LocalCacheExpiration = TimeSpan.FromMinutes(30)
                         });
-                    _logger.LogInformation("Spotify profile data refreshed successfully");
+                    _logger.LogApplicationMessage(DateTime.UtcNow, "Spotify profile data refreshed successfully");
                     return true;
                 }
                 else
                 {
-                    _logger.LogError($"Failed to get spotify profile data: {result.ErrorMessage}");
+                    string errorMessage = $"Failed to get Spotify profile data for BackgroundWorkerService: {result.ErrorMessage}";
+                    _logger.LogApplicationMessage(DateTime.UtcNow, "Spotify profile data refresh failed");
                     return false;
                 }
             }
         }
         catch (Exception e)
         {
-            _logger.LogError($"Failed to refresh spotify data: {e.Message}");
+            _logger.LogApplicationException(DateTime.UtcNow, e,
+                "Failed to refresh Spotify profile data in BackgroundWorkerService");
             return false;
         }
     }
@@ -122,19 +126,20 @@ public class BackgroundWorkerService : Microsoft.Extensions.Hosting.BackgroundSe
                             Expiration = TimeSpan.FromMinutes(30), // Remote Node
                             LocalCacheExpiration = TimeSpan.FromMinutes(30) // Inbuilt Memory
                         });
-                    _logger.LogInformation("Anilist user data refreshed successfully");
+                    _logger.LogApplicationMessage(DateTime.UtcNow, "Anilist user data refreshed successfully");
                     return true;
                 }
                 else
                 {
-                    _logger.LogError($"Failed to get anilist profile data: {result.ErrorMessage}");
+                    string errorMessage = $"Failed to get Anilist profile data for BackgroundWorkerService: {result.ErrorMessage}";
+                    _logger.LogApplicationError(DateTime.UtcNow, errorMessage);
                     return false;
                 }
             }
         }
         catch (Exception e)
         {
-            _logger.LogError($"Failed to refresh anilist data: {e.Message}");
+            _logger.LogApplicationException(DateTime.UtcNow, e,"Failed to refresh Anilist profile data cache in BackgroundWorkerService");
             return false;
         }
     }

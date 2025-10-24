@@ -4,6 +4,7 @@ using NetCord.Hosting.Gateway;
 using ShoukoV2.Api.SignalR;
 using ShoukoV2.BusinessService.Interfaces;
 using ShoukoV2.DiscordBot.Internal.Interfaces;
+using ShoukoV2.Helpers;
 using ShoukoV2.Helpers.Discord;
 using ShoukoV2.Models;
 
@@ -28,6 +29,7 @@ public class PrescenceUpdateGateway : IPresenceUpdateGatewayHandler
     // Map the presence data to a dto and then broadcast it via signalR
     public async ValueTask HandleAsync(Presence arg)
     {
+        _logger.LogApplicationMessage(DateTime.UtcNow, "Discord Presence Update Received");
         _logger.LogInformation("{}", arg);
         DiscordRichPresenceSocketDto dto = arg.MapToDto();
         await _discordPresenceHub.SendMessage(dto);

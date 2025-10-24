@@ -1,22 +1,12 @@
 ﻿using System.Net;
-using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using NetCord;
 using NetCord.Gateway;
 using NetCord.Hosting.Gateway;
 using NetCord.Hosting.Services;
 using NetCord.Hosting.Services.ApplicationCommands;
 using NetCord.Rest;
-using NetCord.Services.ApplicationCommands;
 using Serilog;
-using Serilog.Debugging;
 using Serilog.Sinks.Grafana.Loki;
 using ShoukoV2.Api;
 using ShoukoV2.Api.Anilist;
@@ -24,7 +14,6 @@ using ShoukoV2.Api.SignalR;
 using ShoukoV2.BackgroundService;
 using ShoukoV2.BusinessService;
 using ShoukoV2.BusinessService.Interfaces;
-using ShoukoV2.DataService;
 using ShoukoV2.DiscordBot.Internal;
 using ShoukoV2.DiscordBot.Internal.Interfaces;
 using ShoukoV2.Helpers.Oauth;
@@ -64,7 +53,7 @@ class Program
         }
         
         var host = builder.Build();
-        ConfigureNetcordHost(host);
+        ConfigureHost(host);
         MapSpotifyOauthEndpoints(host);
         MapAnilistOauthEndpoints(host);
         MapAppMemoryStore(host);
@@ -72,7 +61,7 @@ class Program
         Console.WriteLine("ShoukoV2 is running...");
     }
     
-    static void ConfigureNetCordBuilder(WebApplicationBuilder  builder)
+    private static void ConfigureNetCordBuilder(WebApplicationBuilder  builder)
     {
         IEntityToken restClientToken = new BotToken(builder.Configuration["DiscordBotToken"]);
         builder.Services.AddDiscordGateway(options =>
@@ -92,7 +81,7 @@ class Program
             .AddSingleton<RestClient>(sp => new RestClient(restClientToken));
     }
 
-    static void ConfigureServices(WebApplicationBuilder  builder)
+    private static void ConfigureServices(WebApplicationBuilder  builder)
     {
         Console.WriteLine("Configuring Services...");
         builder.Services.AddLogging(logger =>
@@ -129,6 +118,7 @@ class Program
         // Only register the background service if enableCaching is enabled
         if ( enableCaching != null && enableCaching.ToLower() == "true")
         {
+            Console.WriteLine("Caching is enabled, registering the BackgroundWorkerService...");
             builder.Services.AddSingleton<BackgroundWorkerService>();
             builder.Services.AddSingleton<IBackgroundWorkerService>(provider => provider.GetRequiredService<BackgroundWorkerService>());
             builder.Services.AddHostedService<BackgroundWorkerService>(provider => provider.GetRequiredService<BackgroundWorkerService>());
@@ -167,21 +157,18 @@ class Program
     // }
     
 
-    static void AddOauthHandlerEndpoints(WebApplicationBuilder  builder)
+    private static void AddOauthHandlerEndpoints(WebApplicationBuilder  builder)
     {
         var port = builder.Configuration.GetValue<int>("NetworkPort", 5001);
-        
-        
         builder.Services.AddSingleton<ISpotifyOauthHandler, SpotifyOauthHandler>();
         builder.Services.AddSingleton<IAnilistOauthHandler, AnilistOauthHandler>();
         builder.WebHost.ConfigureKestrel(options =>
         {
-            // options.ListenAnyIP(5001);
-            options.Listen(IPAddress.Any, 5001);
+            options.ListenAnyIP(port);
         });
     }
 
-    static void ConfigureNetcordHost(WebApplication host)
+    private static void ConfigureHost(WebApplication host)
     {
         host.AddModules(typeof(Program).Assembly);
         host.MapControllers();
@@ -347,13 +334,12 @@ class Program
     {
         var logger = host.Services.GetRequiredService<ILogger<Program>>();
         
-        logger.LogInformation("Application starting - Test log message");
+        logger.LogInformation("Application starting - RemoteLogging has been enable");
         logger.LogWarning("This is a warning message for testing");
         logger.LogError("This is an error message for testing");
     }
 
-
-    public static void ValidateEnvironmentVariables(WebApplicationBuilder builder)
+    private static void ValidateEnvironmentVariables(WebApplicationBuilder builder)
     {
         var configuration = builder.Configuration;
         

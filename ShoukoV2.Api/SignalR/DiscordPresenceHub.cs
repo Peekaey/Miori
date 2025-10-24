@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using ShoukoV2.Helpers;
 using ShoukoV2.Models;
 
 namespace ShoukoV2.Api.SignalR;
@@ -29,17 +30,20 @@ public class DiscordPresenceHub : Hub, IDiscordPresenceHub
     
     public async Task SendMessage(DiscordRichPresenceSocketDto message)
     {
+        _logger.LogApplicationMessage(DateTime.UtcNow, "Discord Presence Update Sent");
         await _hubContext.Clients.Group(_groupName).SendAsync("ReceiveMessage", message);
     }
 
     public async Task Subscribe()
     {
+        _logger.LogApplicationMessage(DateTime.UtcNow, "Discord Presence Subscriber Received");
         await Groups.AddToGroupAsync(Context.ConnectionId, _groupName);
         await Clients.Group(_groupName).SendAsync("UserJoined", Context.ConnectionId);
     }
 
     public async Task Unsubscribe()
     {
+        _logger.LogApplicationMessage(DateTime.UtcNow, "Discord Presence Unsubscribe Received");
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, _groupName);
         await Clients.Group(_groupName).SendAsync("UserLeft", Context.ConnectionId);
     }

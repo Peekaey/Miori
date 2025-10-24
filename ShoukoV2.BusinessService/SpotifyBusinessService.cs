@@ -2,6 +2,7 @@ using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ShoukoV2.BusinessService.Interfaces;
+using ShoukoV2.Helpers;
 using ShoukoV2.Integrations.Spotify.Interfaces;
 using ShoukoV2.Models;
 using ShoukoV2.Models.Configuration;
@@ -58,7 +59,7 @@ public class SpotifyBusinessService : ISpotifyBusinessService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error fetching Spotify profile data");
+            _logger.LogApplicationException(DateTime.UtcNow, ex, "Error fetching Spotify profile data");
             return Result<SpotifyProfileDto>.AsError(ex.Message);
         }
     }
@@ -127,6 +128,7 @@ public class SpotifyBusinessService : ISpotifyBusinessService
 
         } catch (Exception ex)
         {
+            _logger.LogApplicationException(DateTime.UtcNow, ex, "Error fetching Spotify profile data");
             return Result<SpotifyProfileDto>.AsError(ex.Message);
         }
     }

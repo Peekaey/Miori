@@ -20,6 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\ShoukoV2.Helpers\ShoukoV2.Helpers.csproj" />
       <ProjectReference Include="..\ShoukoV2.Models\ShoukoV2.Models.csproj" />
     </ItemGroup>
 
