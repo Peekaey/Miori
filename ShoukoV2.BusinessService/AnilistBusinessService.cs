@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ShoukoV2.BusinessService.Interfaces;
 using ShoukoV2.Helpers;
@@ -15,22 +16,22 @@ public class AnilistBusinessService : IAnilistBusinessService
     private readonly ILogger<AnilistBusinessService> _logger;
     private readonly IAnilistApiService  _anilistApiService;
     private readonly HybridCache _hybridCache;
-    private readonly AppMemoryStore _appMemoryStore;
+    private readonly IConfiguration _configuration;
 
     public AnilistBusinessService(ILogger<AnilistBusinessService> logger, IAnilistApiService anilistApiService,
-        HybridCache hybridCache, AppMemoryStore appMemoryStore)
+        HybridCache hybridCache, IConfiguration configuration)
     {
         _logger = logger;
         _anilistApiService = anilistApiService;
         _hybridCache = hybridCache;
-        _appMemoryStore = appMemoryStore;
+        _configuration = configuration;
     }
 
     public async Task<Result<AnilistProfileDto>> GetCachedAnilistProfile()
     {
         try
         {
-            var enableCaching = _appMemoryStore.GetCacheOption();
+            var enableCaching = _configuration.GetValue<bool>("EnableCaching");
 
             if (enableCaching == true)
             {

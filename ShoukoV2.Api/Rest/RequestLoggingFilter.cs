@@ -10,6 +10,8 @@ public class RequestLoggingFilter : ActionFilterAttribute
 {
     private const string StartTimeKey = "StartTime";
     private const string RequestIdKey = "RequestId";
+    private const string AuthResultKey = "AuthResult";
+    private const string AuthReasonKey = "AuthReason";
     
     public override void OnActionExecuting(ActionExecutingContext context)
     {
@@ -19,12 +21,16 @@ public class RequestLoggingFilter : ActionFilterAttribute
         var clientIp = GetClientIpAddress(context.HttpContext);
         var userAgent = context.HttpContext.Request.Headers.UserAgent.ToString();
         
+        // Default to true if no auth filter
+        var isAuthorised = context.HttpContext.Items[AuthResultKey] as bool? ?? true;
+        var authReason = context.HttpContext.Items[AuthReasonKey] as string;
+        
         context.HttpContext.Items[StartTimeKey] = startTime;
         context.HttpContext.Items[RequestIdKey] = requestId;
         
         var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<RequestLoggingFilter>>();
         
-        logger.LogApiRequestStart(startTime, requestId, endpoint, clientIp, userAgent);
+        logger.LogApiRequestStartWithAuth(startTime, requestId, endpoint, clientIp, userAgent, isAuthorised, authReason);
         
     }
 

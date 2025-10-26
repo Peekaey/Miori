@@ -83,6 +83,21 @@ public static class LoggingExtensions
             endpoint, timeUtc, requestId, clientIp, userAgent);
     }
 
+    public static void LogApiRequestStartWithAuth(this ILogger logger, DateTime timeUtc, string requestId, 
+        string endpoint, string clientIp, string userAgent, bool isAuthorized, string? authReason = null)
+    {
+        if (isAuthorized)
+        {
+            logger.LogInformation("Starting {endpoint} request at: {timeUtc}. RequestId: {requestId}, ClientIP: {clientIp}, UserAgent: {userAgent}, Auth: SUCCESS ({authReason})",
+                endpoint, timeUtc, requestId, clientIp, userAgent, authReason);
+        }
+        else
+        {
+            logger.LogWarning("Starting {endpoint} request at: {timeUtc}. RequestId: {requestId}, ClientIP: {clientIp}, UserAgent: {userAgent}, Auth: FAILED ({authReason})",
+                endpoint, timeUtc, requestId, clientIp, userAgent, authReason);
+        }
+    }
+    
     public static void LogApiRequestEnd(this ILogger logger, DateTime timeUtc, string requestId, string endpoint,
         TimeSpan duration, int statusCode, Exception? exception = null)
     {
@@ -96,4 +111,6 @@ public static class LoggingExtensions
             logger.LogInformation("Completed {endpoint} request successfully at: {timeUtc}. RequestId: {requestId}, Duration: {duration}ms, StatusCode: {statusCode}", endpoint, timeUtc, requestId, duration.Milliseconds, statusCode);
         }
     }
+    
+
 }

@@ -16,22 +16,22 @@ public class SpotifyBusinessService : ISpotifyBusinessService
     private readonly ILogger<SpotifyBusinessService> _logger;
     private readonly ISpotifyApiService  _spotifyApiService;
     private readonly HybridCache _hybridCache;
-    private readonly AppMemoryStore _appMemoryStore;
+    private readonly IConfiguration _configuration;
     
-    public SpotifyBusinessService(ILogger<SpotifyBusinessService> logger, ISpotifyApiService spotifyApiService, HybridCache hybridCache,
-        AppMemoryStore appMemoryStore)
+    public SpotifyBusinessService(ILogger<SpotifyBusinessService> logger, ISpotifyApiService spotifyApiService, HybridCache hybridCache, 
+        IConfiguration configuration)
     { 
         _logger = logger;
         _spotifyApiService = spotifyApiService;
         _hybridCache = hybridCache;
-        _appMemoryStore = appMemoryStore;
+        _configuration = configuration;
     }
     
     public async Task<Result<SpotifyProfileDto>> GetCachedSpotifyProfile()
     {
         try
         {
-            var enableCaching = _appMemoryStore.GetCacheOption();
+            var enableCaching = _configuration.GetValue<bool>("EnableCaching");
 
             if (enableCaching == true)
             {

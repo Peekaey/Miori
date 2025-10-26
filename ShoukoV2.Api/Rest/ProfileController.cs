@@ -8,6 +8,7 @@ namespace ShoukoV2.Api.Rest;
 
 [ApiController]
 [RequestLoggingFilter]
+[ApiKeyAuth]
 [Route("api/v1/[Controller]")]
 public class ProfileController : ControllerBase
 {
@@ -56,7 +57,7 @@ public class ProfileController : ControllerBase
         return Ok(profileDtoResult.Data);
     }
 
-    [HttpGet("discord/presence")]
+    [HttpGet("discord")]
     [AllowAnonymous]
     public async Task<IActionResult> GetDiscordPresence()
     {

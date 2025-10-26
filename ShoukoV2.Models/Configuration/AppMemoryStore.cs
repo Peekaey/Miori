@@ -6,17 +6,7 @@ public class AppMemoryStore
 {
     public SpotifyTokenStore SpotifyTokenStore { get; set; } = new();
     public AnilistTokenStore AnilistTokenStore { get; set; } = new();
-    private bool EnableCaching { get; set; }
-
-    public void SetCacheOption(bool enableCaching)
-    {
-        EnableCaching = enableCaching;
-    }
-
-    public bool GetCacheOption()
-    {
-        return EnableCaching;
-    }
+    
 }
 
 public class AnilistTokenStore

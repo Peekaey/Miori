@@ -56,7 +56,6 @@ class Program
         ConfigureHost(host);
         MapSpotifyOauthEndpoints(host);
         MapAnilistOauthEndpoints(host);
-        MapAppMemoryStore(host);
         host.Run();
         Console.WriteLine("ShoukoV2 is running...");
     }
@@ -252,35 +251,10 @@ class Program
             }
         });
     }
-
-    private static void MapAppMemoryStore(WebApplication host)
-    {
-        var appMemoryStore = host.Services.GetService<AppMemoryStore>();
-        if (appMemoryStore != null)
-        {
-            var configuration = host.Services.GetService<IConfiguration>();
-            
-            var enableCachingResult = configuration["EnableCaching"];
-
-            if (enableCachingResult == null || enableCachingResult.ToLower() != "true" && enableCachingResult.ToLower() != "false")
-            {
-                throw new ArgumentException("EnableCaching option not specified or invalid parameter provided");
-            }
-            
-            if (enableCachingResult.ToLower() == "true")
-            {
-                appMemoryStore.SetCacheOption(true);
-            }
-            else
-            {
-                appMemoryStore.SetCacheOption(false);
-            }
-        }
-    }
     
     private static void ConfigureRemoteLogging(WebApplicationBuilder builder)
     {
-        // Even though these parameters would of been validated already, double check just in case
+        // Even though these parameters would have been validated already, double check just in case
         var lokiUrl = builder.Configuration["LokiUrl"];
         var lokiUsername = builder.Configuration["LokiUsername"];
         var lokiApiToken = builder.Configuration["LokiApiToken"];
@@ -395,6 +369,24 @@ class Program
             }
 
         }
+        
+        var enableApiKey = configuration["EnableApiKey"];
+        if (string.IsNullOrEmpty(enableApiKey) ||
+            enableApiKey.ToLower() != "true" && enableApiKey.ToLower() != "false")
+        {
+            throw new ArgumentException("EnableApiKey option not specified or invalid parameter provided -must be provided and set to true or false");
+        }
+
+        if (enableApiKey.ToLower() == "true")
+        {
+            var apiKey  = configuration["ApiKey"];
+
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                throw new ArgumentException("ApiKey must be provided if EnableApiKey is true");
+            }
+        }
+        
         
         
     }
