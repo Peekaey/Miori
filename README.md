@@ -109,13 +109,13 @@ The purpose of this bot is to mostly serve as a utility and simplify the aggrega
 </details>
 
 ## How to use
-1. Complete parameters of appsettings.json (An example of the config/parameters required can be found in ShoukoV2.DiscordBot/appsettings.Development.json)
+1. Complete parameters of appsettings.json (An example of the config/parameters required can be found in Miori.DiscordBot/appsettings.Development.json)
 2. Start the application with ```dotnet build``` then ```dotnet run```
 3. Authenticate with the Spotify/Anilist api by using the requesting the authorisation url through the discord bot commands
 4. After authentication, endpoints are ready to be used
 
 ## Docker
-1. Build the docker image with ```docker build -t shouko-v2:latest .```
+1. Build the docker image with ```docker build -t miori:latest .```
 2. Start the container with command:
 <details>
   <summary>
@@ -123,7 +123,7 @@ The purpose of this bot is to mostly serve as a utility and simplify the aggrega
   </summary>     
 <pre lang="bash"><code>
 docker run -d \
---name shoukov2 \
+--name miori \
 -p 0.0.0.0:5001:5001 \
 -e DiscordBotToken="" \
 -e DiscordOwnerUserId="" \
@@ -141,7 +141,7 @@ docker run -d \
 -e LokiApiToken="" \
 -e LokiUrl="" \
 -e NetworkPort="5001" \
-shouko-v2:latest
+miori:latest
 </code>
 </details>    
 
