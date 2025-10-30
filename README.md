@@ -1,4 +1,4 @@
-# ShoukoV2
+# Miori
 
 Discord bot that collects rich presence data from discord as well as user data from other services (Spotify & Anilist at this stage) & presents it via a REST api (Websocket also available for discord presence data).
 
