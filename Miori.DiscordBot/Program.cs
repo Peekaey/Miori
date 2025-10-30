@@ -28,7 +28,7 @@ class Program
 {
     public static void Main(string[] args)
     {
-        Console.WriteLine("Starting ShoukoV2...");
+        Console.WriteLine("Starting Miori...");
         
         var builder = WebApplication.CreateBuilder(args);
         
@@ -56,7 +56,7 @@ class Program
         MapSpotifyOauthEndpoints(host);
         MapAnilistOauthEndpoints(host);
         host.Run();
-        Console.WriteLine("ShoukoV2 is running...");
+        Console.WriteLine("Miori is running...");
     }
     
     private static void ConfigureNetCordBuilder(WebApplicationBuilder  builder)
@@ -275,7 +275,7 @@ class Program
                     lokiUrl,
                     labels: new List<LokiLabel>
                     {
-                        new() { Key = "app", Value = "ShoukoV2" },
+                        new() { Key = "app", Value = "Miori" },
                     },
                     credentials: new LokiCredentials
                     {
