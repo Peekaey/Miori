@@ -9,7 +9,6 @@ using Miori.Models;
 using Miori.Models.Configuration;
 using Miori.Models.Enums;
 using Miori.Models.Spotify;
-using ShoukoV2.Helpers;
 
 namespace Miori.Integrations.Spotify;
 

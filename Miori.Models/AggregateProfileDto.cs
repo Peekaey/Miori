@@ -1,3 +1,7 @@
+using Miori.Models.Anilist;
+using Miori.Models.Discord;
+using Miori.Models.Spotify;
+
 namespace Miori.Models;
 
 public class AggregateProfileDto

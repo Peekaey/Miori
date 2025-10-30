@@ -20,8 +20,7 @@ using NetCord.Hosting.Services.ApplicationCommands;
 using NetCord.Rest;
 using Serilog;
 using Serilog.Sinks.Grafana.Loki;
-using ShoukoV2.Api;
-using ShoukoV2.BusinessService;
+
 
 namespace Miori.DiscordBot;
 
