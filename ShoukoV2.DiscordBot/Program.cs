@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using NetCord;
 using NetCord.Gateway;
@@ -105,9 +105,14 @@ class Program
         
         builder.Services.AddSingleton<IDiscordGatewayService, DiscordGatewayService>();
         builder.Services.AddSingleton<IDiscordRestService, DiscordRestService>();
-        builder.Services.AddSingleton<IDiscordPresenceHub, DiscordPresenceHub>();
+
+        builder.Services.AddSignalR(options =>
+        {
+            options.EnableDetailedErrors = true;
+            options.KeepAliveInterval = TimeSpan.FromMinutes(30);
+            options.ClientTimeoutInterval = TimeSpan.FromMinutes(1);
+        });
         
-        builder.Services.AddSignalR();
         builder.Services.AddControllers();
 
         builder.Services.AddSingleton<IOauthHelpers, OauthHelpers>();
@@ -347,8 +352,7 @@ class Program
             var lokiApiToken = configuration["LokiApiToken"];
             var lokiUrl = configuration["LokiUrl"];
 
-            if (string.IsNullOrEmpty(lokiUrl) || string.IsNullOrEmpty(lokiUsername) ||
-                string.IsNullOrEmpty(lokiApiToken))
+            if (string.IsNullOrEmpty(lokiUrl) || string.IsNullOrEmpty(lokiUsername) || string.IsNullOrEmpty(lokiApiToken))
             {
                 throw new ArgumentException("Endpoint, Username and ApiToken must be provided for Loki Instance");
             }

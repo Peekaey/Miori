@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using NetCord.Gateway;
 using NetCord.Hosting.Gateway;
@@ -14,10 +15,12 @@ public class PrescenceUpdateGateway : IPresenceUpdateGatewayHandler
 {
     private readonly ILogger<PrescenceUpdateGateway> _logger;
     private readonly IDiscordBusinessService  _discordBusinessService;
-    private readonly IDiscordPresenceHub  _discordPresenceHub;
+    private readonly IHubContext<DiscordPresenceHub>  _discordPresenceHub;
+    private readonly string _groupName = "PresenceSubscription";
+
     
     public PrescenceUpdateGateway(ILogger<PrescenceUpdateGateway> logger, IDiscordBusinessService discordBusinessService,
-        IDiscordPresenceHub  discordPresenceHub)
+        IHubContext<DiscordPresenceHub>  discordPresenceHub)
     {
         _logger = logger;
         _discordBusinessService = discordBusinessService;
@@ -30,9 +33,21 @@ public class PrescenceUpdateGateway : IPresenceUpdateGatewayHandler
     public async ValueTask HandleAsync(Presence arg)
     {
         _logger.LogApplicationMessage(DateTime.UtcNow, "Discord Presence Update Received");
-        _logger.LogInformation("{}", arg);
         DiscordRichPresenceSocketDto dto = arg.MapToDto();
-        await _discordPresenceHub.SendMessage(dto);
+        await SendSignalRMessage(dto);
+    }
+    
+    private async Task SendSignalRMessage(DiscordRichPresenceSocketDto message)
+    {
+        try
+        {
+            await _discordPresenceHub.Clients.Group(_groupName).SendAsync("ReceiveMessage", message);
+            _logger.LogApplicationMessage(DateTime.UtcNow,$"Broadcast to group '{_groupName}' completed" );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogApplicationException(DateTime.UtcNow, ex, $"Broadcast to group '{_groupName}' error");
+        }
     }
 }
 

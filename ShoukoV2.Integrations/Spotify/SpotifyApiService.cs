@@ -143,6 +143,7 @@ public class SpotifyApiService : ISpotifyApiService
     {
         var issueDate = _appMemoryStore.SpotifyTokenStore.GetTokenIssueDate();
         var expiryDate = issueDate.AddHours(1);
+
         if (DateTime.UtcNow >= expiryDate)
         {
             await RefreshAccessToken();
@@ -181,8 +182,12 @@ public class SpotifyApiService : ISpotifyApiService
                 var tokenResponse = await response.Content.ReadFromJsonAsync<SpotifyTokenResponse>();
                 if (tokenResponse != null)
                 {
-                    _appMemoryStore.SpotifyTokenStore.RegisterAccessToken(tokenResponse.access_token,
-                        tokenResponse.refresh_token, TokenType.Bearer);
+                    // Use existing token as spotify generally returns "" for the refresh
+                    var newRefreshToken = string.IsNullOrEmpty(tokenResponse.refresh_token)
+                        ? refreshToken : tokenResponse.refresh_token;
+                        
+                    
+                    _appMemoryStore.SpotifyTokenStore.RegisterAccessToken(tokenResponse.access_token, newRefreshToken, TokenType.Bearer);
                     _logger.LogApplicationMessage(DateTime.UtcNow, "Successfully refreshed Spotify access token");
                 }
                 else
@@ -284,7 +289,7 @@ public class SpotifyApiService : ISpotifyApiService
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogApplicationError(DateTime.UtcNow,
-                    "Unsuccessful response from Spotify API when attempting to get Spotify profile info");
+                    "Unsuccessful response from Spotify API when attempting to get Spotify User Playlist");
                 return Result<SpotifyUserPlaylistsResponse>.AsFailure(
                     "Unsuccessful response from Spotify API when attempting to get Spotify User Playlist");
             }
