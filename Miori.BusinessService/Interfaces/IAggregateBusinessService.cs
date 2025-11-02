@@ -4,5 +4,5 @@ namespace Miori.BusinessService.Interfaces;
 
 public interface IAggregateBusinessService
 {
-    Task<Result<AggregateProfileDto>> GetAllProfileDataDto();
+    Task<Result<AggregateProfileDto>> GetAllProfileDataDto(ulong discordUserId);
 }

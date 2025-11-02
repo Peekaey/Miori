@@ -27,13 +27,13 @@ public class AggregateBusinessService : IAggregateBusinessService
     }
         
 
-    public async Task<Result<AggregateProfileDto>> GetAllProfileDataDto()
+    public async Task<Result<AggregateProfileDto>> GetAllProfileDataDto(ulong discordUserId)
     {
         try
         {
-            var discordProfileDtoTask = _discordBusinessService.GetDiscordPresence();
-            var anilistProfileDtoTask = _anilistBusinessService.GetCachedAnilistProfile();
-            var spotifyProfileDtoTask = _spotifyBusinessService.GetCachedSpotifyProfile();
+            var discordProfileDtoTask = _discordBusinessService.GetDiscordPresence(discordUserId);
+            var anilistProfileDtoTask = _anilistBusinessService.GetAnilistProfileForApi(discordUserId);
+            var spotifyProfileDtoTask = _spotifyBusinessService.GetSpotifyProfileForApi(discordUserId);
 
             await Task.WhenAll(discordProfileDtoTask, anilistProfileDtoTask, spotifyProfileDtoTask);
 

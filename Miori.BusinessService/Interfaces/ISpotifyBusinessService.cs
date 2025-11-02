@@ -5,7 +5,6 @@ namespace Miori.BusinessService.Interfaces;
 
 public interface ISpotifyBusinessService
 {
-    Task<Result<SpotifyProfileDto>> GetSpotifyProfile();
-    Task<SpotifyProfileDto> FetchSpotifyProfileFromApiConcurrently();
-    Task<Result<SpotifyProfileDto>> GetCachedSpotifyProfile();
+    Task<BasicResult> RegisterNewSpotifyUser(ulong discordUserId, SpotifyTokenResponse tokenResponse);
+    Task<Result<SpotifyProfileDto>> GetSpotifyProfileForApi(ulong discordUserId);
 }

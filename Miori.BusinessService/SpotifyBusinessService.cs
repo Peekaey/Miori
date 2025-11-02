@@ -2,9 +2,11 @@ using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Miori.BusinessService.Interfaces;
+using Miori.Cache;
 using Miori.Helpers;
 using Miori.Integrations.Spotify.Interfaces;
 using Miori.Models;
+using Miori.Models.Configuration;
 using Miori.Models.Enums;
 using Miori.Models.Spotify;
 
@@ -16,120 +18,53 @@ public class SpotifyBusinessService : ISpotifyBusinessService
     private readonly ISpotifyApiService  _spotifyApiService;
     private readonly HybridCache _hybridCache;
     private readonly IConfiguration _configuration;
+    private readonly AppMemoryStore _appMemoryStore;
+    private readonly ISpotifyCacheService  _spotifyCacheService;
     
     public SpotifyBusinessService(ILogger<SpotifyBusinessService> logger, ISpotifyApiService spotifyApiService, HybridCache hybridCache, 
-        IConfiguration configuration)
+        IConfiguration configuration, AppMemoryStore appMemoryStore, ISpotifyCacheService spotifyCacheService)
     { 
         _logger = logger;
         _spotifyApiService = spotifyApiService;
         _hybridCache = hybridCache;
         _configuration = configuration;
-    }
-    
-    public async Task<Result<SpotifyProfileDto>> GetCachedSpotifyProfile()
-    {
-        try
-        {
-            var enableCaching = _configuration.GetValue<bool>("EnableCaching");
-
-            if (enableCaching == true)
-            {
-                var cachedData = await _hybridCache.GetOrCreateAsync(
-                    CacheKeys.SpotifyProfile,
-                    async cancellationToken =>
-                    {
-                        _logger.LogInformation("Cache miss - fetching latest Spotify profile data");
-                        return await FetchSpotifyProfileFromApiConcurrently();
-                    },
-                    new HybridCacheEntryOptions
-                    {
-                        Expiration = TimeSpan.FromMinutes(30),
-                        LocalCacheExpiration = TimeSpan.FromMinutes(30)
-                    });
-
-                return Result<SpotifyProfileDto>.AsSuccess(cachedData);
-            }
-            else
-            {
-                var profileData = await FetchSpotifyProfileFromApiConcurrently();
-                return Result<SpotifyProfileDto>.AsSuccess(profileData);
-            }
-            
-        }
-        catch (Exception ex)
-        {
-            _logger.LogApplicationException(DateTime.UtcNow, ex, "Error fetching Spotify profile data");
-            return Result<SpotifyProfileDto>.AsError(ex.Message);
-        }
-    }
-    
-    public async Task<SpotifyProfileDto> FetchSpotifyProfileFromApiConcurrently()
-    {
-        await _spotifyApiService.ValidateAndRefreshToken();
-        
-        var spotifyProfileDto = new SpotifyProfileDto();
-
-        var spotifyProfileTask = _spotifyApiService.GetSpotifyProfileInfo();
-        var spotifyRecentlyPlayedTask =  _spotifyApiService.GetSpotifyUserRecentlyPlayed();
-        var spotifyPlaylistsTask = _spotifyApiService.GetSpotifyUserPlaylists();
-        
-        await Task.WhenAll(spotifyProfileTask, spotifyRecentlyPlayedTask, spotifyPlaylistsTask);
-
-        var spotifyProfileResult = await spotifyProfileTask;
-        var spotifyRecentlyPlayedResult = await spotifyRecentlyPlayedTask;
-        var spotifyPlaylistsResult = await spotifyPlaylistsTask;
-        
-        if (spotifyProfileResult.ResultOutcome == ResultEnum.Success)
-        {
-            spotifyProfileDto.SpotifyProfile = spotifyProfileResult.Data;
-        }
-
-        if (spotifyRecentlyPlayedResult.ResultOutcome == ResultEnum.Success)
-        {
-            spotifyProfileDto.RecentlyPlayed = spotifyRecentlyPlayedResult.Data;
-        }
-            
-        if (spotifyPlaylistsResult.ResultOutcome == ResultEnum.Success)
-        {
-            spotifyProfileDto.UserPlaylists = spotifyPlaylistsResult.Data;
-        }
-        
-        return spotifyProfileDto;
+        _appMemoryStore = appMemoryStore;
+        _spotifyCacheService = spotifyCacheService;
     }
     
 
-    // Legacy Test Call for Debugging
-    public async Task<Result<SpotifyProfileDto>> GetSpotifyProfile()
+    public async Task<BasicResult> RegisterNewSpotifyUser(ulong discordUserId, SpotifyTokenResponse tokenResponse)
     {
-        try
+        var newProfileResponse = await  _spotifyApiService.GetSpotifyProfileIdForNewRegister(tokenResponse);
+
+        if (newProfileResponse.ResultOutcome != ResultEnum.Success)
         {
-            await _spotifyApiService.ValidateAndRefreshToken();
-            SpotifyProfileDto spotifyProfileDto = new SpotifyProfileDto();
-            var spotifyProfileResult = await _spotifyApiService.GetSpotifyProfileInfo();
-            var spotifyRecentlyPlayedResult = await _spotifyApiService.GetSpotifyUserRecentlyPlayed();
-            var spotifyPlaylistsResult = await _spotifyApiService.GetSpotifyUserPlaylists();
-
-            if (spotifyProfileResult.ResultOutcome == ResultEnum.Success)
-            {
-                spotifyProfileDto.SpotifyProfile = spotifyProfileResult.Data;
-            }
-
-            if (spotifyRecentlyPlayedResult.ResultOutcome == ResultEnum.Success)
-            {
-                spotifyProfileDto.RecentlyPlayed = spotifyRecentlyPlayedResult.Data;
-            }
-            
-            if (spotifyPlaylistsResult.ResultOutcome == ResultEnum.Success)
-            {
-                spotifyProfileDto.UserPlaylists = spotifyPlaylistsResult.Data;
-            }
-            return Result<SpotifyProfileDto>.AsSuccess(spotifyProfileDto);
-
-        } catch (Exception ex)
-        {
-            _logger.LogApplicationException(DateTime.UtcNow, ex, "Error fetching Spotify profile data");
-            return Result<SpotifyProfileDto>.AsError(ex.Message);
+            _logger.LogApplicationError(DateTime.UtcNow, $"Error getting spotify profile for discord user {discordUserId} with error: {newProfileResponse.ErrorMessage}");
         }
+        
+        _logger.LogApplicationMessage(DateTime.UtcNow, $"Successfully tied Discord User Id : '{discordUserId}' to Spotify User : '{newProfileResponse.Data}'");
+        _appMemoryStore.AddOrUpdateSpotifyToken(discordUserId, SpotifyToken.Create(discordUserId, newProfileResponse.Data, tokenResponse.access_token, tokenResponse.refresh_token));
+        return BasicResult.AsSuccess();
+    }
+
+    public async Task<Result<SpotifyProfileDto>> GetSpotifyProfileForApi(ulong discordUserId)
+    {
+        var isSpotifyFound = _appMemoryStore.TryGetSpotifyToken(discordUserId, out var spotifyToken);
+
+        if (isSpotifyFound == false)
+        {
+            return Result<SpotifyProfileDto>.AsFailure("Spotify user registered to the provided discord user Id does not exist");
+        }
+
+        var profileResult = await _spotifyCacheService.GetCachedSpotifyProfile(discordUserId);
+
+        if (profileResult.ResultOutcome != ResultEnum.Success)
+        {
+            return Result<SpotifyProfileDto>.AsError(profileResult.ErrorMessage);
+        }
+        
+        return Result<SpotifyProfileDto>.AsSuccess(profileResult.Data);
+
     }
     
     

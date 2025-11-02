@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Miori.BusinessService.Interfaces;
 using Miori.Helpers;
 using Miori.Integrations.Spotify.Interfaces;
 using Miori.Models.Configuration;
@@ -17,19 +18,21 @@ public class SpotifyOauthHandler : ISpotifyOauthHandler
     private readonly IConfiguration _configuration;
     private readonly ILogger<SpotifyOauthHandler> _logger;
     private readonly AppMemoryStore _appMemoryStore;
-    private readonly ISpotifyApiService  _spotifyApiService;
+    private readonly IOauthHelpers _oauthHelpers;
+    private readonly ISpotifyBusinessService  _spotifyBusinessService;
     
     public SpotifyOauthHandler(IHttpClientFactory httpClientFactory, IConfiguration configuration, 
-        ILogger<SpotifyOauthHandler> logger, AppMemoryStore appMemoryStore, ISpotifyApiService spotifyApiService)
+        ILogger<SpotifyOauthHandler> logger, AppMemoryStore appMemoryStore, IOauthHelpers oauthHelpers, ISpotifyBusinessService spotifyBusinessService)
     {
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
         _logger = logger;
         _appMemoryStore = appMemoryStore;
-        _spotifyApiService = spotifyApiService;
+        _oauthHelpers = oauthHelpers;
+        _spotifyBusinessService = spotifyBusinessService;
     }
     
-    public async Task<OAuthCallbackResult> HandleCallbackAsync(string? code, string? error)
+    public async Task<OAuthCallbackResult> HandleCallbackAsync(string? code, string? error, string? state)
     {
         try
         {
@@ -45,6 +48,21 @@ public class SpotifyOauthHandler : ISpotifyOauthHandler
                 _logger.LogApplicationError(DateTime.UtcNow, "Invalid request - No authorisation code received");
                 return OAuthCallbackResult.Error("Invalid request - No authorisation code received");
             }
+
+            if (string.IsNullOrEmpty(state))
+            {
+                _logger.LogApplicationError(DateTime.UtcNow, "Invalid request - No state received");
+                return OAuthCallbackResult.Error("Invalid request - No state received");
+            }
+            
+            bool isStateValid = _oauthHelpers.TryValidateState(state, out var discordUserId);
+
+            if (isStateValid == false)
+            {
+                _logger.LogApplicationError(DateTime.UtcNow, "Invalid request - State invalid or expired");
+                return OAuthCallbackResult.Error("Invalid request - State invalid or expired");
+            }
+            
 
             var clientId = _configuration["SpotifyClientId"];
             var clientSecret = _configuration["SpotifyClientSecret"];
@@ -91,20 +109,23 @@ public class SpotifyOauthHandler : ISpotifyOauthHandler
 
             var tokenResponse = await response.Content.ReadFromJsonAsync<SpotifyTokenResponse>();
 
-            if (tokenResponse != null)
+            if (tokenResponse == null)
             {
-                _appMemoryStore.SpotifyTokenStore.RegisterAccessToken(tokenResponse.access_token,
-                    tokenResponse.refresh_token, TokenType.Bearer);
+                _logger.LogApplicationError(DateTime.UtcNow, "Failed to parse SpotifyOauthHandler token response");
+                return OAuthCallbackResult.Error("Failed to parse token response");
+            }
+            
+            var registerResult = await _spotifyBusinessService.RegisterNewSpotifyUser(discordUserId, tokenResponse);
 
-                // TODO hacky -> Implement a proper background service in the future
-                await _spotifyApiService.RegisterSpotifyUserId();
-
-                _logger.LogApplicationMessage(DateTime.UtcNow, "Spotify access token & user registered");
-                return OAuthCallbackResult.Success();
+            if (registerResult.ResultOutcome != ResultEnum.Success)
+            {
+                _logger.LogApplicationError(DateTime.UtcNow, "Error when attempting to retrieve spotify profile data for register");
+                return OAuthCallbackResult.Error("Error when attempting to retrieve spotify profile data for register");
             }
 
-            _logger.LogApplicationError(DateTime.UtcNow, "Failed to parse SpotifyOauthHandler token response");
-            return OAuthCallbackResult.Error("Failed to parse token response");
+            _logger.LogApplicationMessage(DateTime.UtcNow, "Spotify access token & user registered");
+            return OAuthCallbackResult.Success();
+            
         }
         catch (Exception ex)
         {

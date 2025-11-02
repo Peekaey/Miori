@@ -5,6 +5,6 @@ namespace Miori.Integrations.Anilist.Interfaces;
 
 public interface IAnilistApiService
 {
-    Task<Result<AnilistViewerResponse>> GetAnilistProfileInfo();
-    Task<Result<AnilistViewerStatisticsResponse>> GetAnilistProfileStatistics();
+    Task<Result<int>> GetAnilistProfileIdForNewRegister(AnilistTokenResponse tokenResponse);
+    Task<AnilistProfileDto> GetAnilistUserData(ulong discordUserId);
 }

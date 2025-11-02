@@ -2,5 +2,5 @@ namespace Miori.Models.Anilist;
 
 public class AnilistViewerStatisticsResponse
 {
-    public AnilistViewerStatisticsData data { get; set; } = new();
+    public AnilistData data { get; set; }
 }

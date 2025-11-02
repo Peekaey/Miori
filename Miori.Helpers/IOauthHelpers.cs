@@ -2,6 +2,7 @@ namespace Miori.Helpers;
 
 public interface IOauthHelpers
 {
-    string GenerateAnilistAuthorisationUrl();
-    string GenerateSpotifyAuthorisationUrl();
+    string GenerateAnilistAuthorisationUrl(ulong userDiscordId);
+    string GenerateSpotifyAuthorisationUrl(ulong userDiscordId);
+    bool TryValidateState(string state, out ulong discordUserId);
 }

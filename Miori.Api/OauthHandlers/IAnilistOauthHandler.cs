@@ -4,5 +4,5 @@ namespace Miori.Api.OauthHandlers;
 
 public interface IAnilistOauthHandler
 {
-    Task<OAuthCallbackResult> HandleCallbackAsync(string? code, string? error);
+    Task<OAuthCallbackResult> HandleCallbackAsync(string? code, string? error, string? state);
 }

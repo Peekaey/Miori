@@ -6,6 +6,7 @@ using Miori.Helpers;
 using Miori.Integrations.Anilist.Interfaces;
 using Miori.Models;
 using Miori.Models.Anilist;
+using Miori.Models.Configuration;
 using Miori.Models.Enums;
 
 namespace Miori.BusinessService;
@@ -16,85 +17,51 @@ public class AnilistBusinessService : IAnilistBusinessService
     private readonly IAnilistApiService  _anilistApiService;
     private readonly HybridCache _hybridCache;
     private readonly IConfiguration _configuration;
-
+    private readonly AppMemoryStore _appMemoryStore;
+    private readonly IAnilistCacheService _anilistCacheService;
     public AnilistBusinessService(ILogger<AnilistBusinessService> logger, IAnilistApiService anilistApiService,
-        HybridCache hybridCache, IConfiguration configuration)
+        HybridCache hybridCache, IConfiguration configuration, AppMemoryStore appMemoryStore, IAnilistCacheService anilistCacheService)
     {
         _logger = logger;
         _anilistApiService = anilistApiService;
         _hybridCache = hybridCache;
         _configuration = configuration;
-    }
-
-    public async Task<Result<AnilistProfileDto>> GetCachedAnilistProfile()
-    {
-        try
-        {
-            var enableCaching = _configuration.GetValue<bool>("EnableCaching");
-
-            if (enableCaching == true)
-            {
-                var cachedData = await _hybridCache.GetOrCreateAsync(
-                    CacheKeys.AnilistUser,
-                    async cancellationToken =>
-                    {
-                        _logger.LogApplicationMessage(DateTime.UtcNow, "Cache miss - fetching latest Anilist profile data...");
-                        return await FetchAnilistProfileFromApiConcurrently();
-                    },
-                    new HybridCacheEntryOptions
-                    {
-                        Expiration = TimeSpan.FromMinutes(30),
-                        LocalCacheExpiration = TimeSpan.FromMinutes(30)
-                    });
-                return Result<AnilistProfileDto>.AsSuccess(cachedData);
-            }
-            else
-            {
-                var profileData = await FetchAnilistProfileFromApiConcurrently();
-                return Result<AnilistProfileDto>.AsSuccess(profileData);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogApplicationException(DateTime.UtcNow, ex, "Error fetching Anilist profile data");
-            return Result<AnilistProfileDto>.AsError(ex.Message);
-        }
+        _appMemoryStore = appMemoryStore;
+        _anilistCacheService = anilistCacheService;
     }
     
-
-    public async Task<AnilistProfileDto> FetchAnilistProfileFromApiConcurrently()
+    public async Task<BasicResult> RegisterNewAnilistUser(ulong discordUserId, AnilistTokenResponse tokenResponse)
     {
-        var anilistProfileDto = new AnilistProfileDto();
+        var newProfileResponse = await  _anilistApiService.GetAnilistProfileIdForNewRegister(tokenResponse);
+
+        if (newProfileResponse.ResultOutcome != ResultEnum.Success)
+        {
+            _logger.LogApplicationError(DateTime.UtcNow, $"Error getting anilist profile for discord user {discordUserId} with error: {newProfileResponse.ErrorMessage}");
+        }
         
-        var anilistProfileResult = await _anilistApiService.GetAnilistProfileStatistics();
-
-        if (anilistProfileResult.ResultOutcome == ResultEnum.Success)
-        {
-            anilistProfileDto.AnilistViewerStatistics = anilistProfileResult.Data;
-        }
-        return anilistProfileDto;
+        _logger.LogApplicationMessage(DateTime.UtcNow, $"Successfully tied Discord User Id : '{discordUserId}' to Anilist User : '{newProfileResponse.Data}'");
+        _appMemoryStore.AddOrUpdateAnilistToken(discordUserId, AnilistToken.Create(discordUserId, newProfileResponse.Data.ToString(), tokenResponse.access_token, tokenResponse.refresh_token));
+        return BasicResult.AsSuccess();
     }
-    
-    // Legacy Test Call for Debugging
-    public async Task<Result<AnilistProfileDto>> GetAnilistProfile()
+
+    public async Task<Result<AnilistProfileDto>> GetAnilistProfileForApi(ulong discordUserId)
     {
-        try
-        {
-            AnilistProfileDto anilistProfileDto = new AnilistProfileDto();
-            var anilistProfileResult = await _anilistApiService.GetAnilistProfileStatistics();
+        var isAnilistFound = _appMemoryStore.TryGetAnilistToken(discordUserId, out var anilistToken);
 
-            if (anilistProfileResult.ResultOutcome == ResultEnum.Success)
-            {
-                anilistProfileDto.AnilistViewerStatistics = anilistProfileResult.Data;
-            }
-
-            return Result<AnilistProfileDto>.AsSuccess(anilistProfileDto);
-        }
-        catch (Exception ex)
+        if (isAnilistFound == false)
         {
-            _logger.LogApplicationException(DateTime.UtcNow, ex, "Error fetching anilist profile data");
-            return Result<AnilistProfileDto>.AsError(ex.Message);
+            return Result<AnilistProfileDto>.AsFailure("Anilist user registered to the provider discord user Id does not exist");
         }
+
+        var profileResult = await _anilistCacheService.GetCachedAnilistProfile(discordUserId);
+
+        if (profileResult.ResultOutcome != ResultEnum.Success)
+        {
+            return Result<AnilistProfileDto>.AsFailure(profileResult.ErrorMessage);
+        }
+        
+        return Result<AnilistProfileDto>.AsSuccess(profileResult.Data);
+        
     }
     
     
