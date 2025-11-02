@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -47,24 +48,22 @@ public class SpotifyBusinessService : ISpotifyBusinessService
         return BasicResult.AsSuccess();
     }
 
-    public async Task<Result<SpotifyProfileDto>> GetSpotifyProfileForApi(ulong discordUserId)
+    public async Task<ApiResult<SpotifyProfileDto>> GetSpotifyProfileForApi(ulong discordUserId)
     {
         var isSpotifyFound = _appMemoryStore.TryGetSpotifyToken(discordUserId, out var spotifyToken);
 
         if (isSpotifyFound == false)
         {
-            return Result<SpotifyProfileDto>.AsFailure("Spotify user registered to the provided discord user Id does not exist");
+            return ApiResult<SpotifyProfileDto>.AsErrorDisplayFriendlyMessage("Spotify user registered to the provided discord user Id does not exist", HttpStatusCode.InternalServerError);
         }
 
         var profileResult = await _spotifyCacheService.GetCachedSpotifyProfile(discordUserId);
 
         if (profileResult.ResultOutcome != ResultEnum.Success)
         {
-            return Result<SpotifyProfileDto>.AsError(profileResult.ErrorMessage);
+            return ApiResult<SpotifyProfileDto>.AsInternalError();
         }
-        
-        return Result<SpotifyProfileDto>.AsSuccess(profileResult.Data);
-
+        return ApiResult<SpotifyProfileDto>.AsSuccess(profileResult.Data);
     }
     
     

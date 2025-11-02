@@ -25,14 +25,6 @@ public static class OAuthEndpoints
             var result = await oAuthHandler.HandleCallbackAsync(code, error, state);
             if (result.IsSuccess)
             {
-                // if (host.Configuration["EnableCaching"].ToLower() == "true")
-                // {
-                //     var backgroundWorkerService = host.Services.GetService<IBackgroundWorkerService>();
-                //     if (backgroundWorkerService != null)
-                //     {
-                //         await backgroundWorkerService.RefreshSpotifyDataCache();
-                //     }
-                // }
                 return Results.Content(OAuthResponseBuilder.BuildSuccessPage(), "text/html");
             }
             else
@@ -56,15 +48,6 @@ public static class OAuthEndpoints
             var result = await oAuthHandler.HandleCallbackAsync(code, error, state);
             if (result.IsSuccess)
             {
-                // if (host.Configuration["EnableCaching"].ToLower() == "true")
-                // {
-                //     var backgroundWorkerService = host.Services.GetService<IBackgroundWorkerService>();
-                //     if (backgroundWorkerService != null)
-                //     {
-                //         await backgroundWorkerService.RefreshAnilistDataCache();
-                //     }
-                // }
-
                 return Results.Content(OAuthResponseBuilder.BuildSuccessPage(), "text/html");
             }
             else

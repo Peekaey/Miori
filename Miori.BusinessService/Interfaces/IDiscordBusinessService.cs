@@ -9,5 +9,5 @@ public interface IDiscordBusinessService
 {
     Task<Presence?> GetUserPresenceAsync(ulong guildId, ulong userId);
     Task<GuildUser?> GetGuildMemberAsync(ulong guildId, ulong uuid);
-    Task<Result<DiscordRichPresenceSocketDto>> GetDiscordPresence(ulong discordUserId);
+    Task<ApiResult<DiscordRichPresenceSocketDto>> GetDiscordPresence(ulong discordUserId);
 }

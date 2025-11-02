@@ -27,7 +27,7 @@ public class AggregateBusinessService : IAggregateBusinessService
     }
         
 
-    public async Task<Result<AggregateProfileDto>> GetAllProfileDataDto(ulong discordUserId)
+    public async Task<ApiResult<AggregateProfileDto>> GetAllProfileDataDto(ulong discordUserId)
     {
         try
         {
@@ -62,12 +62,12 @@ public class AggregateBusinessService : IAggregateBusinessService
                 aggregateprofileData.SpotifyProfileData = spotifyProfileDtoResult.Data;
             }
 
-            return Result<AggregateProfileDto>.AsSuccess(aggregateprofileData);
+            return ApiResult<AggregateProfileDto>.AsSuccess(aggregateprofileData);
         }
         catch (Exception ex)
         {
             _logger.LogApplicationException(DateTime.UtcNow, ex, "Exception when getting aggregated profile data");
-            return Result<AggregateProfileDto>.AsError("Exception when getting aggregated profile data");
+            return ApiResult<AggregateProfileDto>.AsInternalError();
         }
     }
     

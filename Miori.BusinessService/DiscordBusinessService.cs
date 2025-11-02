@@ -27,7 +27,7 @@ public class DiscordBusinessService : IDiscordBusinessService
     }
 
 
-    public async Task<Result<DiscordRichPresenceSocketDto>> GetDiscordPresence(ulong discordUserId)
+    public async Task<ApiResult<DiscordRichPresenceSocketDto>> GetDiscordPresence(ulong discordUserId)
     {
         try
         {
@@ -38,15 +38,14 @@ public class DiscordBusinessService : IDiscordBusinessService
             if (presence == null)
             {
                 _logger.LogApplicationError(DateTime.UtcNow, $"Failed to get user presence for user {discordUserId}");
-                return Result<DiscordRichPresenceSocketDto>.AsError($"Failed to get user presence {discordUserId}");
+                return ApiResult<DiscordRichPresenceSocketDto>.AsInternalError();
             }
-            
-            return Result<DiscordRichPresenceSocketDto>.AsSuccess(presence.MapToDto());
+            return ApiResult<DiscordRichPresenceSocketDto>.AsSuccess(presence.MapToDto());
         }
         catch (Exception ex)
         {
             _logger.LogApplicationException(DateTime.UtcNow, ex, $"Error fetching presence of discord user {discordUserId}");
-            return Result<DiscordRichPresenceSocketDto>.AsError(ex.Message);
+            return ApiResult<DiscordRichPresenceSocketDto>.AsInternalError();
         }
     }
     public async Task<Presence?> GetUserPresenceAsync(ulong guildId, ulong userId)

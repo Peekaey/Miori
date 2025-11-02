@@ -39,7 +39,7 @@ public class UserController : ControllerBase
 
         if (profileDtoResult.ResultOutcome != ResultEnum.Success)
         {
-            return StatusCode(500, "Internal error occured when attempting to get spotify data");
+            return StatusCode((int)profileDtoResult.StatusCode, profileDtoResult.ErrorMessage);
         }
         return Ok(profileDtoResult.Data);
     }
@@ -52,7 +52,7 @@ public class UserController : ControllerBase
 
         if (profileDtoResult.ResultOutcome != ResultEnum.Success)
         {
-            return StatusCode(500, "Internal error occured when attempting to get anilist data");
+            return StatusCode((int)profileDtoResult.StatusCode, profileDtoResult.ErrorMessage);
         }
         return Ok(profileDtoResult.Data);
     }
@@ -65,7 +65,8 @@ public class UserController : ControllerBase
 
         if (presenceResult.ResultOutcome != ResultEnum.Success)
         {
-            return StatusCode(500, "Internal error occured when attempting to get discord presence data");
+            return StatusCode((int)presenceResult.StatusCode, presenceResult.ErrorMessage);
+            
         }
         return Ok(presenceResult.Data);
     }
@@ -78,7 +79,7 @@ public class UserController : ControllerBase
 
         if (allResult.ResultOutcome != ResultEnum.Success)
         {
-            return StatusCode(500, "Internal error occured when attempting to get all profile data");
+            return StatusCode((int)allResult.StatusCode, allResult.ErrorMessage);
         }
         return Ok(allResult.Data);
     }
