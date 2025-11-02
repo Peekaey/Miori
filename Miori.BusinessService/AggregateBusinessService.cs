@@ -27,13 +27,13 @@ public class AggregateBusinessService : IAggregateBusinessService
     }
         
 
-    public async Task<Result<AggregateProfileDto>> GetAllProfileDataDto()
+    public async Task<ApiResult<AggregateProfileDto>> GetAllProfileDataDto(ulong discordUserId)
     {
         try
         {
-            var discordProfileDtoTask = _discordBusinessService.GetDiscordPresence();
-            var anilistProfileDtoTask = _anilistBusinessService.GetCachedAnilistProfile();
-            var spotifyProfileDtoTask = _spotifyBusinessService.GetCachedSpotifyProfile();
+            var discordProfileDtoTask = _discordBusinessService.GetDiscordPresence(discordUserId);
+            var anilistProfileDtoTask = _anilistBusinessService.GetAnilistProfileForApi(discordUserId);
+            var spotifyProfileDtoTask = _spotifyBusinessService.GetSpotifyProfileForApi(discordUserId);
 
             await Task.WhenAll(discordProfileDtoTask, anilistProfileDtoTask, spotifyProfileDtoTask);
 
@@ -62,12 +62,12 @@ public class AggregateBusinessService : IAggregateBusinessService
                 aggregateprofileData.SpotifyProfileData = spotifyProfileDtoResult.Data;
             }
 
-            return Result<AggregateProfileDto>.AsSuccess(aggregateprofileData);
+            return ApiResult<AggregateProfileDto>.AsSuccess(aggregateprofileData);
         }
         catch (Exception ex)
         {
             _logger.LogApplicationException(DateTime.UtcNow, ex, "Exception when getting aggregated profile data");
-            return Result<AggregateProfileDto>.AsError("Exception when getting aggregated profile data");
+            return ApiResult<AggregateProfileDto>.AsInternalError();
         }
     }
     

@@ -1,0 +1,9 @@
+using Miori.Models;
+using Miori.Models.Anilist;
+
+namespace Miori.BusinessService;
+
+public interface IAnilistCacheService
+{
+    Task<Result<AnilistProfileDto>> GetCachedAnilistProfile(ulong discordUserId);
+}

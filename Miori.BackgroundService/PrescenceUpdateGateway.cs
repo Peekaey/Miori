@@ -35,6 +35,7 @@ public class PrescenceUpdateGateway : IPresenceUpdateGatewayHandler
         await SendSignalRMessage(dto);
     }
     
+    // TODO Add an api key as a potential option
     private async Task SendSignalRMessage(DiscordRichPresenceSocketDto message)
     {
         try

@@ -5,7 +5,7 @@ namespace Miori.BusinessService.Interfaces;
 
 public interface IAnilistBusinessService
 {
-    Task<Result<AnilistProfileDto>> GetAnilistProfile();
-    Task<AnilistProfileDto> FetchAnilistProfileFromApiConcurrently();
-    Task<Result<AnilistProfileDto>> GetCachedAnilistProfile();
+    Task<BasicResult> RegisterNewAnilistUser(ulong discordUserId, AnilistTokenResponse tokenResponse);
+    Task<ApiResult<AnilistProfileDto>> GetAnilistProfileForApi(ulong discordUserId);
+    
 }

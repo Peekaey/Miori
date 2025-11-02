@@ -56,91 +56,91 @@ public class BackgroundWorkerService : Microsoft.Extensions.Hosting.BackgroundSe
             RefreshSpotifyDataCache(),
             RefreshAnilistDataCache()
         };
-
-        var results = await Task.WhenAll(tasks);
-
-        var successCount = results.Count(r => r);
-        var totalCount = results.Length;
+    
+        var results = Task.WhenAll(tasks);
+    
+        // var successCount = results.Count(r => r);
+        // var totalCount = results.Length;
         
-        _logger.LogInformation("Cache refresh completed: {Success}/{Total} services updated", 
-            successCount, totalCount);
+        // _logger.LogInformation("Cache refresh completed: {Success}/{Total} services updated", 
+        //     successCount, totalCount);
     }
 
-    public async Task<bool> RefreshSpotifyDataCache()
+    public async Task RefreshSpotifyDataCache()
     {
-        try
-        {
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                var spotifyBusinessService = scope.ServiceProvider.GetRequiredService<ISpotifyBusinessService>();
-                var result = await spotifyBusinessService.GetSpotifyProfile();
-                
-                if (result.ResultOutcome == ResultEnum.Success)
-                {
-                    await _hybridCache.RemoveAsync(CacheKeys.SpotifyProfile);
-                    
-                    await _hybridCache.SetAsync(
-                        CacheKeys.SpotifyProfile,
-                        result.Data,
-                        new HybridCacheEntryOptions
-                        {
-                            Expiration = TimeSpan.FromMinutes(30),
-                            LocalCacheExpiration = TimeSpan.FromMinutes(30)
-                        });
-                    _logger.LogApplicationMessage(DateTime.UtcNow, "Spotify profile data refreshed successfully");
-                    return true;
-                }
-                else
-                {
-                    string errorMessage = $"Failed to get Spotify profile data for BackgroundWorkerService: {result.ErrorMessage}";
-                    _logger.LogApplicationMessage(DateTime.UtcNow, "Spotify profile data refresh failed");
-                    return false;
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            _logger.LogApplicationException(DateTime.UtcNow, e,
-                "Failed to refresh Spotify profile data in BackgroundWorkerService");
-            return false;
-        }
+        // try
+        // {
+        //     using (var scope = _scopeFactory.CreateScope())
+        //     {
+        //         var spotifyBusinessService = scope.ServiceProvider.GetRequiredService<ISpotifyBusinessService>();
+        //         var result = await spotifyBusinessService.GetSpotifyProfile();
+        //         
+        //         if (result.ResultOutcome == ResultEnum.Success)
+        //         {
+        //             await _hybridCache.RemoveAsync(CacheKeys.SpotifyProfile);
+        //             
+        //             await _hybridCache.SetAsync(
+        //                 CacheKeys.SpotifyProfile,
+        //                 result.Data,
+        //                 new HybridCacheEntryOptions
+        //                 {
+        //                     Expiration = TimeSpan.FromMinutes(30),
+        //                     LocalCacheExpiration = TimeSpan.FromMinutes(30)
+        //                 });
+        //             _logger.LogApplicationMessage(DateTime.UtcNow, "Spotify profile data refreshed successfully");
+        //             return true;
+        //         }
+        //         else
+        //         {
+        //             string errorMessage = $"Failed to get Spotify profile data for BackgroundWorkerService: {result.ErrorMessage}";
+        //             _logger.LogApplicationMessage(DateTime.UtcNow, "Spotify profile data refresh failed");
+        //             return false;
+        //         }
+        //     }
+        // }
+        // catch (Exception e)
+        // {
+        //     _logger.LogApplicationException(DateTime.UtcNow, e,
+        //         "Failed to refresh Spotify profile data in BackgroundWorkerService");
+        //     return false;
+        // }
     }
-
-    public async Task<bool> RefreshAnilistDataCache()
+    
+    public async Task RefreshAnilistDataCache()
     {
-        try
-        {
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                var anilistBusinessService = scope.ServiceProvider.GetRequiredService<IAnilistBusinessService>();
-                var result = await anilistBusinessService.GetAnilistProfile();
-
-                if (result.ResultOutcome == ResultEnum.Success)
-                {
-                    await _hybridCache.RemoveAsync(CacheKeys.AnilistUser);
-                    await _hybridCache.SetAsync(
-                        CacheKeys.AnilistUser,
-                        result.Data,
-                        new HybridCacheEntryOptions
-                        {
-                            Expiration = TimeSpan.FromMinutes(30), // Remote Node
-                            LocalCacheExpiration = TimeSpan.FromMinutes(30) // Inbuilt Memory
-                        });
-                    _logger.LogApplicationMessage(DateTime.UtcNow, "Anilist user data refreshed successfully");
-                    return true;
-                }
-                else
-                {
-                    string errorMessage = $"Failed to get Anilist profile data for BackgroundWorkerService: {result.ErrorMessage}";
-                    _logger.LogApplicationError(DateTime.UtcNow, errorMessage);
-                    return false;
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            _logger.LogApplicationException(DateTime.UtcNow, e,"Failed to refresh Anilist profile data cache in BackgroundWorkerService");
-            return false;
-        }
+        // try
+        // {
+        //     using (var scope = _scopeFactory.CreateScope())
+        //     {
+        //         var anilistBusinessService = scope.ServiceProvider.GetRequiredService<IAnilistBusinessService>();
+        //         var result = await anilistBusinessService.GetAnilistProfile();
+        //
+        //         if (result.ResultOutcome == ResultEnum.Success)
+        //         {
+        //             await _hybridCache.RemoveAsync(CacheKeys.AnilistUser);
+        //             await _hybridCache.SetAsync(
+        //                 CacheKeys.AnilistUser,
+        //                 result.Data,
+        //                 new HybridCacheEntryOptions
+        //                 {
+        //                     Expiration = TimeSpan.FromMinutes(30), // Remote Node
+        //                     LocalCacheExpiration = TimeSpan.FromMinutes(30) // Inbuilt Memory
+        //                 });
+        //             _logger.LogApplicationMessage(DateTime.UtcNow, "Anilist user data refreshed successfully");
+        //             return true;
+        //         }
+        //         else
+        //         {
+        //             string errorMessage = $"Failed to get Anilist profile data for BackgroundWorkerService: {result.ErrorMessage}";
+        //             _logger.LogApplicationError(DateTime.UtcNow, errorMessage);
+        //             return false;
+        //         }
+        //     }
+        // }
+        // catch (Exception e)
+        // {
+        //     _logger.LogApplicationException(DateTime.UtcNow, e,"Failed to refresh Anilist profile data cache in BackgroundWorkerService");
+        //     return false;
+        // }
     }
 }

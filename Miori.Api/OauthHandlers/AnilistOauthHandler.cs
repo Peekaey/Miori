@@ -3,10 +3,12 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Miori.BusinessService.Interfaces;
 using Miori.Helpers;
 using Miori.Integrations.Anilist.Interfaces;
 using Miori.Models.Anilist;
 using Miori.Models.Configuration;
+using Miori.Models.Enums;
 using Miori.Models.Results;
 
 namespace Miori.Api.OauthHandlers;
@@ -17,32 +19,51 @@ public class AnilistOauthHandler : IAnilistOauthHandler
     private readonly IConfiguration  _configuration;
     private readonly ILogger<AnilistOauthHandler> _logger;
     private readonly AppMemoryStore _appMemoryStore;
-    private readonly IAnilistApiService _anilistApiService;
+    private readonly IOauthHelpers _oauthHelpers;
+    private readonly IAnilistBusinessService  _anilistBusinessService;
 
     public AnilistOauthHandler(IHttpClientFactory httpClientFactory, IConfiguration configuration,
-        ILogger<AnilistOauthHandler> logger, AppMemoryStore appMemoryStore, IAnilistApiService  anilistApiService)
+        ILogger<AnilistOauthHandler> logger, AppMemoryStore appMemoryStore, IOauthHelpers oauthHelpers,
+        IAnilistBusinessService anilistBusinessService)
     {
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
         _logger = logger;
         _appMemoryStore = appMemoryStore;
-        _anilistApiService = anilistApiService;
+        _oauthHelpers = oauthHelpers;
+        _anilistBusinessService = anilistBusinessService;
     }
 
-    public async Task<OAuthCallbackResult> HandleCallbackAsync(string? code, string? error)
+    public async Task<OAuthCallbackResult> HandleCallbackAsync(string? code, string? error, string? state)
     {
         try
         {
             if (!string.IsNullOrEmpty(error))
             {
-                _logger.LogError("Anilist Oauth error: {}", error);
+                string errorMessage = $"Anilist Oauth error: {error}";
+                _logger.LogApplicationError(DateTime.UtcNow, errorMessage);
+                return OAuthCallbackResult.Error("Authenticated failed");
             }
 
             if (string.IsNullOrEmpty(code))
             {
+                _logger.LogApplicationError(DateTime.UtcNow, "Invalid request - No authorisation code received");
                 return OAuthCallbackResult.Error("Invalid request - No authorisation code received");
             }
 
+            if (string.IsNullOrEmpty(state))
+            {
+                _logger.LogApplicationError(DateTime.UtcNow, "Invalid request - No state received");
+                return OAuthCallbackResult.Error("Invalid request - No state received");
+            }
+            
+            bool isStateValid = _oauthHelpers.TryValidateState(state, out var discordUserId);
+
+            if (isStateValid == false)
+            {
+                _logger.LogApplicationError(DateTime.UtcNow, "Invalid request - State invalid or expired");
+                return OAuthCallbackResult.Error("Invalid request - State invalid or expired");
+            }
             var clientId = _configuration["AnilistClientId"];
             var clientSecret = _configuration["AnilistClientSecret"];
             var redirectUri = _configuration["AnilistRedirectUri"];
@@ -82,23 +103,26 @@ public class AnilistOauthHandler : IAnilistOauthHandler
 
             var tokenResponse = await response.Content.ReadFromJsonAsync<AnilistTokenResponse>();
             
-            if (tokenResponse != null)
+            if (tokenResponse == null)
             {
-                _appMemoryStore.AnilistTokenStore.RegisterAccessToken(tokenResponse.access_token,
-                    tokenResponse.refresh_token);
-
-                await _anilistApiService.GetAnilistProfileInfo();
-                
-                _logger.LogApplicationMessage(DateTime.UtcNow, "Anilist access token & user registered");
-                return OAuthCallbackResult.Success();
+                _logger.LogApplicationError(DateTime.UtcNow, "Failed to parse AnilistOauthHandler token response");
+                return OAuthCallbackResult.Error("Failed to parse token response");
             }
             
-            _logger.LogApplicationError(DateTime.UtcNow, "Failed to parse AnilistOauthHandler token response");
-            return OAuthCallbackResult.Error("Failed to parse token response");
+            var registerResult = await _anilistBusinessService.RegisterNewAnilistUser(discordUserId, tokenResponse);
+
+            if (registerResult.ResultOutcome != ResultEnum.Success)
+            {
+                _logger.LogApplicationError(DateTime.UtcNow, "Error when attempting to retrieve anilist profile data for register");
+                return OAuthCallbackResult.Error("Error when attempting to retrieve anilist profile data for register");
+
+            }
+            _logger.LogApplicationMessage(DateTime.UtcNow, "Anilist access token & user registered");
+            return OAuthCallbackResult.Success();
         }
         catch (Exception ex)
         {
-            _logger.LogApplicationException(DateTime.UtcNow, ex, "SpotifyOauthHandler");
+            _logger.LogApplicationException(DateTime.UtcNow, ex, "AnilistOauthHandler");
             return OAuthCallbackResult.Error(ex.Message);
         }
     }

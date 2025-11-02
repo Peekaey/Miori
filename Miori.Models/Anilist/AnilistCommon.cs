@@ -5,9 +5,14 @@ public class AnilistCommon
     
 }
 
+public class AnilistData
+{
+    public AnilistViewer viewer { get; set; } = new();
+}
+
 public class AnilistViewerStatisticsData
 {
-    public AnilistViewer Viewer { get; set; } = new();
+    public AnilistViewer viewer { get; set; } = new();
 }
 
 public class AnilistViewer

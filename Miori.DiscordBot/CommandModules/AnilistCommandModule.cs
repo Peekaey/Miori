@@ -27,40 +27,25 @@ public class AnilistCommandModule : ApplicationCommandModule<ApplicationCommandC
     public async Task SendAnilistAuthenticationLink()
     {
         var contextWrapper = new ContextWrapper(Context.Interaction, "authenticate-with-spotify");
+        
         _logger.LogInteractionStart(contextWrapper.CommandName, contextWrapper.UserName, contextWrapper.UserId, contextWrapper.InteractionId, 
             contextWrapper.InteractionTimeUtc,contextWrapper.GuildId);
 
         try
         {
             await Context.Interaction.SendResponseAsync(InteractionCallback.DeferredMessage(MessageFlags.Ephemeral));
-
-            var ownerDiscordId = _configuration["DiscordOwnerUserId"];
-            var interactionOwnerId = Context.Interaction.User.Id;
-
-            if (ownerDiscordId != interactionOwnerId.ToString())
+            
+            var authUrl = _oauthHelpers.GenerateAnilistAuthorisationUrl(Context.User.Id);
+                
+            _logger.LogInteractionEnd(contextWrapper.CommandName, contextWrapper.UserName, contextWrapper.UserId,
+                contextWrapper.InteractionId, contextWrapper.InteractionTimeUtc, contextWrapper.GuildId);
+                
+            await Context.Interaction.SendFollowupMessageAsync(new InteractionMessageProperties
             {
-                _logger.LogInteractionEnd(contextWrapper.CommandName, contextWrapper.UserName, contextWrapper.UserId,
-                    contextWrapper.InteractionId, contextWrapper.InteractionTimeUtc, contextWrapper.GuildId);
-                
-                await Context.Interaction.SendFollowupMessageAsync(new InteractionMessageProperties
-                {
-                    Content = "This user is not allowed to execute this command",
-                    Flags = MessageFlags.Ephemeral
-                });
-            }
-            else
-            {
-                var authUrl = _oauthHelpers.GenerateAnilistAuthorisationUrl();
-                
-                _logger.LogInteractionEnd(contextWrapper.CommandName, contextWrapper.UserName, contextWrapper.UserId,
-                    contextWrapper.InteractionId, contextWrapper.InteractionTimeUtc, contextWrapper.GuildId);
-                
-                await Context.Interaction.SendFollowupMessageAsync(new InteractionMessageProperties
-                {
-                    Content = authUrl,
-                    Flags = MessageFlags.Ephemeral
-                });
-            }
+                Content = authUrl,
+                Flags = MessageFlags.Ephemeral
+            });
+            
         }
         catch (Exception e)
         {

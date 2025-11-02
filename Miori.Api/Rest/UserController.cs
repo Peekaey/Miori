@@ -10,16 +10,16 @@ namespace Miori.Api.Rest;
 [RequestLoggingFilter]
 [ApiKeyAuth]
 [Route("api/v1/[Controller]")]
-public class ProfileController : ControllerBase
+public class UserController : ControllerBase
 {
-    private readonly ILogger<ProfileController> _logger;
+    private readonly ILogger<UserController> _logger;
     private readonly IAnilistBusinessService _anilistBusinessService;
     private readonly ISpotifyBusinessService _spotifyBusinessService;
     private readonly IUnraidBusinessService _unraidBusinessService;
     private readonly IDiscordBusinessService _discordBusinessService;
     private readonly IAggregateBusinessService _aggregateBusinessService;
 
-    public ProfileController(ILogger<ProfileController> logger, IAnilistBusinessService anilistBusinessService, 
+    public UserController(ILogger<UserController> logger, IAnilistBusinessService anilistBusinessService, 
         ISpotifyBusinessService spotifyBusinessService, IUnraidBusinessService unraidBusinessService, 
         IDiscordBusinessService discordBusinessService, IAggregateBusinessService aggregateBusinessService)
     {
@@ -31,54 +31,55 @@ public class ProfileController : ControllerBase
         _aggregateBusinessService = aggregateBusinessService;
     }
 
-    [HttpGet("spotify")]
+    [HttpGet("{userId}/spotify")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetSpotifyProfileData()
+    public async Task<IActionResult> GetUserSpotifyProfileData(ulong userId)
     {
-        var profileDtoResult = await _spotifyBusinessService.GetCachedSpotifyProfile();
+        var profileDtoResult = await _spotifyBusinessService.GetSpotifyProfileForApi(userId);
 
         if (profileDtoResult.ResultOutcome != ResultEnum.Success)
         {
-            return StatusCode(500, "Internal error occured when attempting to get spotify data");
+            return StatusCode((int)profileDtoResult.StatusCode, profileDtoResult.ErrorMessage);
         }
         return Ok(profileDtoResult.Data);
     }
 
-    [HttpGet("anilist")]
+    [HttpGet("{userId}/anilist")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetAnilistProfileData()
+    public async Task<IActionResult> GetUserAnilistProfileData(ulong userId)
     {
-        var profileDtoResult = await _anilistBusinessService.GetCachedAnilistProfile();
+        var profileDtoResult = await _anilistBusinessService.GetAnilistProfileForApi(userId);
 
         if (profileDtoResult.ResultOutcome != ResultEnum.Success)
         {
-            return StatusCode(500, "Internal error occured when attempting to get anilist data");
+            return StatusCode((int)profileDtoResult.StatusCode, profileDtoResult.ErrorMessage);
         }
         return Ok(profileDtoResult.Data);
     }
 
-    [HttpGet("discord")]
+    [HttpGet("{userId}/discord")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetDiscordPresence()
+    public async Task<IActionResult> GetUserDiscordPresence(ulong userId)
     {
-        var presenceResult = await _discordBusinessService.GetDiscordPresence();
+        var presenceResult = await _discordBusinessService.GetDiscordPresence(userId);
 
         if (presenceResult.ResultOutcome != ResultEnum.Success)
         {
-            return StatusCode(500, "Internal error occured when attempting to get discord presence data");
+            return StatusCode((int)presenceResult.StatusCode, presenceResult.ErrorMessage);
+            
         }
         return Ok(presenceResult.Data);
     }
 
-    [HttpGet("all")]
+    [HttpGet("{userId}/all")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetUserAll(ulong discordUserId)
     {
-        var allResult = await _aggregateBusinessService.GetAllProfileDataDto();
+        var allResult = await _aggregateBusinessService.GetAllProfileDataDto(discordUserId);
 
         if (allResult.ResultOutcome != ResultEnum.Success)
         {
-            return StatusCode(500, "Internal error occured when attempting to get all profile data");
+            return StatusCode((int)allResult.StatusCode, allResult.ErrorMessage);
         }
         return Ok(allResult.Data);
     }

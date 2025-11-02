@@ -26,30 +26,26 @@ public class DiscordBusinessService : IDiscordBusinessService
         _configuration = configuration;
     }
 
-    // As the application is currently only intended get the data off a single guild/user
-    // Hardcore the values for now
-    // no need for caching as presence is realtime
-    public async Task<Result<DiscordRichPresenceSocketDto>> GetDiscordPresence()
+
+    public async Task<ApiResult<DiscordRichPresenceSocketDto>> GetDiscordPresence(ulong discordUserId)
     {
         try
         {
             ulong guildId = ulong.Parse(_configuration["DiscordOwnerGuildId"]);
-            ulong userId = ulong.Parse(_configuration["DiscordOwnerUserId"]);
 
-            Presence? presence = await GetUserPresenceAsync(guildId, userId);
+            Presence? presence = await GetUserPresenceAsync(guildId, discordUserId);
 
             if (presence == null)
             {
-                _logger.LogApplicationError(DateTime.UtcNow, "Failed to get user presence");
-                return Result<DiscordRichPresenceSocketDto>.AsError("Failed to get user presence");
+                _logger.LogApplicationError(DateTime.UtcNow, $"Failed to get user presence for user {discordUserId}");
+                return ApiResult<DiscordRichPresenceSocketDto>.AsInternalError();
             }
-            
-            return Result<DiscordRichPresenceSocketDto>.AsSuccess(presence.MapToDto());
+            return ApiResult<DiscordRichPresenceSocketDto>.AsSuccess(presence.MapToDto());
         }
         catch (Exception ex)
         {
-            _logger.LogApplicationException(DateTime.UtcNow, ex, "Error fetching presence of discord user");
-            return Result<DiscordRichPresenceSocketDto>.AsError(ex.Message);
+            _logger.LogApplicationException(DateTime.UtcNow, ex, $"Error fetching presence of discord user {discordUserId}");
+            return ApiResult<DiscordRichPresenceSocketDto>.AsInternalError();
         }
     }
     public async Task<Presence?> GetUserPresenceAsync(ulong guildId, ulong userId)
