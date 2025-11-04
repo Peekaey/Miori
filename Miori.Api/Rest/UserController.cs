@@ -76,9 +76,16 @@ public class UserController : ControllerBase
 
     [HttpGet("{userId}/all/")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetUserAll(ulong userId, [FromQuery] ulong? steamId = null)
+    public async Task<IActionResult> GetUserAll(ulong userId, [FromQuery] string? steamId = null)
     {
-        var allResult = await _aggregateBusinessService.GetAllProfileDataDto(userId, steamId);
+        ulong? ulongSteamId = null;
+        
+        if (steamId != null)
+        {
+            ulongSteamId = await _steamBusinessService.MapSteamIdToUniqueSteamId(steamId);
+        }
+
+        var allResult = await _aggregateBusinessService.GetAllProfileDataDto(userId, ulongSteamId);
 
         if (allResult.ResultOutcome != ResultEnum.Success)
         {
@@ -89,9 +96,16 @@ public class UserController : ControllerBase
 
     [HttpGet("{userId}/steam/{steamId}")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetUserSteamData(ulong userId, ulong steamId)
+    public async Task<IActionResult> GetUserSteamData(ulong userId, string steamId)
     {
-        var steamUserDataResult = await _steamBusinessService.GetSteamDataForApi(steamId);
+        ulong? ulongSteamId = await _steamBusinessService.MapSteamIdToUniqueSteamId(steamId);
+
+        if (ulongSteamId == null)
+        {
+            return StatusCode(404, "User with the provided steamId was not found or profile is private");
+        }
+        
+        var steamUserDataResult = await _steamBusinessService.GetSteamDataForApi(ulongSteamId.Value);
 
         if (steamUserDataResult.ResultOutcome != ResultEnum.Success)
         {

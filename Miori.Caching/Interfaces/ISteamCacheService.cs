@@ -6,5 +6,6 @@ namespace Miori.Cache.Interfaces;
 public interface ISteamCacheService
 {
     Task<Result<SteamApiDto>> GetCachedSteamData(ulong steamId);
-    
+    Task<Result<ulong?>> GetCachedSteamId(string steamId);
+
 }

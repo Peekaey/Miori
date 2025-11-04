@@ -30,5 +30,17 @@ public class SteamBusinessService : ISteamBusinessService
         }
         return ApiResult<SteamApiDto>.AsSuccess(steamUserDataResult.Data);
     }
+
+    public async Task<ulong?> MapSteamIdToUniqueSteamId(string steamId)
+    {
+        var uniqueSteamIdResult = await _steamCacheService.GetCachedSteamId(steamId);
+
+        if (uniqueSteamIdResult.ResultOutcome != ResultEnum.Success)
+        {
+            return null;
+        }
+        return uniqueSteamIdResult.Data;
+    }
+    
     
 }

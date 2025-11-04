@@ -6,4 +6,5 @@ namespace Miori.BusinessService.Interfaces;
 public interface ISteamBusinessService
 {
     Task<ApiResult<SteamApiDto>> GetSteamDataForApi(ulong steamId);
+    Task<ulong?> MapSteamIdToUniqueSteamId(string steamId);
 }

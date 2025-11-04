@@ -59,4 +59,39 @@ public class SteamCacheService : ISteamCacheService
             return Result<SteamApiDto>.AsError(ex.Message);
         }
     }
+    
+    public async Task<Result<ulong?>> GetCachedSteamId(string steamId)
+    {
+        try
+        {
+            var enableCaching = _configuration.GetValue<bool>("EnableCaching");
+            if (enableCaching == true)
+            {
+                var cachedData = await _hybridCache.GetOrCreateAsync(
+                    $"steam:{steamId.ToString()}:profile",
+                    async cancellationToken =>
+                    {
+                        _logger.LogApplicationMessage(DateTime.UtcNow, "Cache miss - fetching latest steam user Id");
+                        return await _steamApiService.FetchUniqueSteamId(steamId);
+                    },
+                    new HybridCacheEntryOptions
+                    {
+                        Expiration = TimeSpan.FromMinutes(15),
+                        LocalCacheExpiration = TimeSpan.FromMinutes(5),
+                    });
+
+                return Result<ulong?>.AsSuccess(cachedData);
+            }
+            else
+            {
+                var id = await _steamApiService.FetchUniqueSteamId(steamId);
+                return Result<ulong?>.AsSuccess(id);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogApplicationException(DateTime.UtcNow, ex, "Error fetching Steam user id");
+            return Result<ulong?>.AsError(ex.Message);
+        }
+    }
 }
