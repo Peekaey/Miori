@@ -54,7 +54,7 @@ public class SpotifyBusinessService : ISpotifyBusinessService
 
         if (isSpotifyFound == false)
         {
-            return ApiResult<SpotifyProfileDto>.AsErrorDisplayFriendlyMessage("Spotify user registered to the provided discord user Id does not exist", HttpStatusCode.InternalServerError);
+            return ApiResult<SpotifyProfileDto>.AsErrorDisplayFriendlyMessage("Spotify user registered to the provided discord user Id does not exist", HttpStatusCode.NotFound);
         }
 
         var profileResult = await _spotifyCacheService.GetCachedSpotifyProfile(discordUserId);

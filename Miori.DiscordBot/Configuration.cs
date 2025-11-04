@@ -69,7 +69,6 @@ public static class Configuration
         builder.Services.AddSingleton<IAnilistBusinessService, AnilistBusinessService>();
         builder.Services.AddSingleton<IDiscordBusinessService, DiscordBusinessService>();
         builder.Services.AddSingleton<ISpotifyBusinessService, SpotifyBusinessService>();
-        builder.Services.AddSingleton<IUnraidBusinessService, UnraidBusinessService>();
         builder.Services.AddSingleton<IAggregateBusinessService, AggregateBusinessService>();
         builder.Services.AddSingleton<ISteamBusinessService, SteamBusinessService>();
         

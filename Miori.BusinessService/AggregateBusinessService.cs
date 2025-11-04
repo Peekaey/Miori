@@ -12,19 +12,16 @@ public class AggregateBusinessService : IAggregateBusinessService
     private readonly IDiscordBusinessService _discordBusinessService;
     private readonly ISpotifyBusinessService _spotifyBusinessService;
     private readonly IAnilistBusinessService _anilistBusinessService;
-    private readonly IUnraidBusinessService _unraidBusinessService;
     private readonly ISteamBusinessService _steamBusinessService;
 
     public AggregateBusinessService(ILogger<AggregateBusinessService> logger,
         IDiscordBusinessService discordBusinessService,
-        ISpotifyBusinessService spotifyBusinessService, IAnilistBusinessService anilistBusinessService,
-        IUnraidBusinessService unraidBusinessService, ISteamBusinessService steamBusinessService)
+        ISpotifyBusinessService spotifyBusinessService, IAnilistBusinessService anilistBusinessService,ISteamBusinessService steamBusinessService)
     {
         _logger = logger;
         _discordBusinessService = discordBusinessService;
         _spotifyBusinessService = spotifyBusinessService;
         _anilistBusinessService = anilistBusinessService;
-        _unraidBusinessService = unraidBusinessService;
         _steamBusinessService = steamBusinessService;
     }
         

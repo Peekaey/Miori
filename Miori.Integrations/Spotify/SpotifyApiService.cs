@@ -55,7 +55,6 @@ public class SpotifyApiService : ISpotifyApiService
                 return Result<string>.AsFailure("Failed to deserialise the respons from the Spotify API");
             }
 
-            _logger.LogApplicationMessage(DateTime.UtcNow, "Successfully retrieved spotify profile info");
             return Result<string>.AsSuccess(responseContent.id);
         }
         catch (Exception ex)
@@ -130,8 +129,7 @@ public class SpotifyApiService : ISpotifyApiService
                 _logger.LogApplicationError(DateTime.UtcNow, "Failed to deserialise the response from the Spotify API for spotify profile info");
                 return Result<SpotifyMeResponse>.AsFailure("Failed to deserialise the response from the Spotify API for spotify profile info");
             }
-
-            _logger.LogApplicationMessage(DateTime.UtcNow, "Successfully retrieved spotify profile info");
+            
             return Result<SpotifyMeResponse>.AsSuccess(responseContent);
         }
         catch (Exception ex)
@@ -234,8 +232,7 @@ public class SpotifyApiService : ISpotifyApiService
             {
                 return Result<SpotifyRecentlyPlayedResponse>.AsFailure("Failed to deserialise Spotify response for recently played");
             }
-
-            _logger.LogApplicationMessage(DateTime.UtcNow, "Successfully retrieved Spotify recently played");
+            
             return Result<SpotifyRecentlyPlayedResponse>.AsSuccess(responseContent);
         }
         catch (Exception ex)
@@ -272,7 +269,6 @@ public class SpotifyApiService : ISpotifyApiService
                 return Result<SpotifyUserPlaylistsResponse>.AsFailure("Failed to deserialise Spotify response for user playlists");
             }
 
-            _logger.LogApplicationMessage(DateTime.UtcNow, "Successfully retrieved Spotify user playlists");
             return Result<SpotifyUserPlaylistsResponse>.AsSuccess(responseContent);
         }
         catch (Exception ex)
@@ -281,55 +277,5 @@ public class SpotifyApiService : ISpotifyApiService
             return Result<SpotifyUserPlaylistsResponse>.AsFailure("Exception when getting Spotify user playlists");
         }
     }
-    
-    // public async Task<Result<string>> GetAccessToken()
-    // {
-    //     try
-    //     {
-    //         string? clientId = _configuration["SpotifyClientId"];
-    //         string? clientSecret = _configuration["SpotifyClientSecret"];
-    //         if (clientId == null || clientSecret == null)
-    //         {
-    //             _logger.LogApplicationError(DateTime.UtcNow, "Spotify client ID or secret is not configured. " +
-    //                                                          "Please restart the application and ensure values are provided correctly");
-    //             return Result<string>.AsError("Spotify client ID or secret is not configured. " +
-    //                                           "Please restart the application and ensure values are provided correctly");
-    //         }
-    //
-    //         var request = new HttpRequestMessage(HttpMethod.Post, "https://accounts.spotify.com/api/token");
-    //         var formData = new Dictionary<string, string>
-    //         {
-    //             ["grant_type"] = "client_credentials",
-    //             ["client_id"] = clientId,
-    //             ["client_secret"] = clientSecret
-    //         };
-    //
-    //         request.Content = new FormUrlEncodedContent(formData);
-    //         var httpClient = _httpClientFactory.CreateClient();
-    //         var response = await httpClient.SendAsync(request);
-    //
-    //         if (!response.IsSuccessStatusCode)
-    //         {
-    //             _logger.LogApplicationError(DateTime.UtcNow, "Error getting access token from Spotify API");
-    //             return Result<string>.AsError("Error getting access token from Spotify API");
-    //         }
-    //
-    //         var responseContent = await response.Content.ReadAsStringAsync();
-    //         var tokenResponse = System.Text.Json.JsonSerializer.Deserialize<SpotifyTokenResponse>(responseContent);
-    //         if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.access_token))
-    //         {
-    //             _logger.LogApplicationError(DateTime.UtcNow, "Invalid token response from Spotify API");
-    //             return Result<string>.AsError("Invalid token response from Spotify");
-    //         }
-    //
-    //         _logger.LogInformation("Successfully got access token from Spotify API");
-    //         return Result<string>.AsSuccess(tokenResponse.access_token);
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         _logger.LogApplicationException(DateTime.UtcNow, ex, "Exception when getting Spotify access token");
-    //         return Result<string>.AsError("Exception when getting Spotify access token");
-    //     }
-    // }
     
 }

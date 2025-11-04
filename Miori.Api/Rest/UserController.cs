@@ -15,20 +15,18 @@ public class UserController : ControllerBase
     private readonly ILogger<UserController> _logger;
     private readonly IAnilistBusinessService _anilistBusinessService;
     private readonly ISpotifyBusinessService _spotifyBusinessService;
-    private readonly IUnraidBusinessService _unraidBusinessService;
     private readonly IDiscordBusinessService _discordBusinessService;
     private readonly IAggregateBusinessService _aggregateBusinessService;
     private readonly ISteamBusinessService _steamBusinessService;
 
     public UserController(ILogger<UserController> logger, IAnilistBusinessService anilistBusinessService, 
-        ISpotifyBusinessService spotifyBusinessService, IUnraidBusinessService unraidBusinessService, 
-        IDiscordBusinessService discordBusinessService, IAggregateBusinessService aggregateBusinessService,
+        ISpotifyBusinessService spotifyBusinessService, IDiscordBusinessService discordBusinessService, 
+        IAggregateBusinessService aggregateBusinessService,
         ISteamBusinessService steamBusinessService)
     {
         _logger = logger;
         _anilistBusinessService = anilistBusinessService;
         _spotifyBusinessService = spotifyBusinessService;
-        _unraidBusinessService = unraidBusinessService;
         _discordBusinessService = discordBusinessService;
         _aggregateBusinessService = aggregateBusinessService;
         _steamBusinessService = steamBusinessService;

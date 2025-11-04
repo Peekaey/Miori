@@ -8,10 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Unraid\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.10" />
       <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.10" />

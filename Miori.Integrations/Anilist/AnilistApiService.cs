@@ -81,8 +81,6 @@ public class AnilistApiService : IAnilistApiService
         {
             AnilistProfileResponse = anilistProfileWithStatistics.Data
         };
-
-
     }
 
     // https://docs.anilist.co/guide/auth/
@@ -111,8 +109,7 @@ public class AnilistApiService : IAnilistApiService
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogApplicationError(DateTime.UtcNow,
-                    "Unsuccessful response from Anilist API when attempting to profile info with statistics");
+                _logger.LogApplicationError(DateTime.UtcNow, "Unsuccessful response from Anilist API when attempting to profile info with statistics");
                 return Result<AnilistProfileResponse>.AsError("Unsuccessful response from Anilist API when attempting to profile info with statistics");
             }
 
