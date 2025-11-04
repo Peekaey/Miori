@@ -72,7 +72,7 @@ public class AnilistApiService : IAnilistApiService
         }
     }
     
-    public async Task<AnilistProfileDto> GetAnilistUserData(ulong discordUserId)
+    public async Task<AnilistProfileDto> FetchAnilistDataFromApi(ulong discordUserId)
     {
 
         // Don't handle any errors, let it bubble up and handle

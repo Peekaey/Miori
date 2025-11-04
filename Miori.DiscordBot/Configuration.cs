@@ -6,12 +6,14 @@ using Miori.BackgroundService;
 using Miori.BusinessService;
 using Miori.BusinessService.Interfaces;
 using Miori.Cache;
+using Miori.Cache.Interfaces;
 using Miori.Helpers;
 using Miori.Integrations.Anilist;
 using Miori.Integrations.Anilist.Interfaces;
 using Miori.Integrations.Discord;
 using Miori.Integrations.Spotify;
 using Miori.Integrations.Spotify.Interfaces;
+using Miori.Integrations.Steam;
 using Miori.Models.Configuration;
 using NetCord;
 using NetCord.Gateway;
@@ -62,15 +64,18 @@ public static class Configuration
         
         builder.Services.AddSingleton<ISpotifyApiService, SpotifyApiService>();
         builder.Services.AddSingleton<IAnilistApiService, AnilistApiService>();
+        builder.Services.AddSingleton<ISteamApiService, SteamApiService>();
 
         builder.Services.AddSingleton<IAnilistBusinessService, AnilistBusinessService>();
         builder.Services.AddSingleton<IDiscordBusinessService, DiscordBusinessService>();
         builder.Services.AddSingleton<ISpotifyBusinessService, SpotifyBusinessService>();
         builder.Services.AddSingleton<IUnraidBusinessService, UnraidBusinessService>();
         builder.Services.AddSingleton<IAggregateBusinessService, AggregateBusinessService>();
+        builder.Services.AddSingleton<ISteamBusinessService, SteamBusinessService>();
         
         builder.Services.AddSingleton<IAnilistCacheService, AnilistCacheService>();
         builder.Services.AddSingleton<ISpotifyCacheService, SpotifyCacheService>();
+        builder.Services.AddSingleton<ISteamCacheService, SteamCacheService>();
         
         builder.Services.AddSingleton<IDiscordGatewayService, DiscordGatewayService>();
         builder.Services.AddSingleton<IDiscordRestService, DiscordRestService>();
@@ -78,24 +83,20 @@ public static class Configuration
         builder.Services.AddSignalR(options =>
         {
             options.EnableDetailedErrors = true;
-            options.KeepAliveInterval = TimeSpan.FromMinutes(30);
+            options.KeepAliveInterval = TimeSpan.FromMinutes(15);
             options.ClientTimeoutInterval = TimeSpan.FromMinutes(1);
         });
         
         builder.Services.AddControllers();
 
         builder.Services.AddSingleton<IOauthHelpers, OauthHelpers>();
-        builder.Services.AddHybridCache();
         
         var enableCaching = builder.Configuration["EnableCaching"];
-
-        // Only register the background service if enableCaching is enabled
+        builder.Services.AddHybridCache();
+        
         if ( enableCaching != null && enableCaching.ToLower() == "true")
         {
-            Console.WriteLine("Caching is enabled, registering the BackgroundWorkerService...");
-            builder.Services.AddSingleton<BackgroundWorkerService>();
-            builder.Services.AddSingleton<IBackgroundWorkerService>(provider => provider.GetRequiredService<BackgroundWorkerService>());
-            builder.Services.AddHostedService<BackgroundWorkerService>(provider => provider.GetRequiredService<BackgroundWorkerService>());
+            Console.WriteLine("Caching is enabled...");
         }
     }
         

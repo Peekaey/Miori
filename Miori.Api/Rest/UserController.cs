@@ -18,10 +18,12 @@ public class UserController : ControllerBase
     private readonly IUnraidBusinessService _unraidBusinessService;
     private readonly IDiscordBusinessService _discordBusinessService;
     private readonly IAggregateBusinessService _aggregateBusinessService;
+    private readonly ISteamBusinessService _steamBusinessService;
 
     public UserController(ILogger<UserController> logger, IAnilistBusinessService anilistBusinessService, 
         ISpotifyBusinessService spotifyBusinessService, IUnraidBusinessService unraidBusinessService, 
-        IDiscordBusinessService discordBusinessService, IAggregateBusinessService aggregateBusinessService)
+        IDiscordBusinessService discordBusinessService, IAggregateBusinessService aggregateBusinessService,
+        ISteamBusinessService steamBusinessService)
     {
         _logger = logger;
         _anilistBusinessService = anilistBusinessService;
@@ -29,6 +31,7 @@ public class UserController : ControllerBase
         _unraidBusinessService = unraidBusinessService;
         _discordBusinessService = discordBusinessService;
         _aggregateBusinessService = aggregateBusinessService;
+        _steamBusinessService = steamBusinessService;
     }
 
     [HttpGet("{userId}/spotify")]
@@ -71,17 +74,30 @@ public class UserController : ControllerBase
         return Ok(presenceResult.Data);
     }
 
-    [HttpGet("{userId}/all")]
+    [HttpGet("{userId}/all/")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetUserAll(ulong discordUserId)
+    public async Task<IActionResult> GetUserAll(ulong userId, [FromQuery] ulong? steamId = null)
     {
-        var allResult = await _aggregateBusinessService.GetAllProfileDataDto(discordUserId);
+        var allResult = await _aggregateBusinessService.GetAllProfileDataDto(userId, steamId);
 
         if (allResult.ResultOutcome != ResultEnum.Success)
         {
             return StatusCode((int)allResult.StatusCode, allResult.ErrorMessage);
         }
         return Ok(allResult.Data);
+    }
+
+    [HttpGet("{userId}/steam/{steamId}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetUserSteamData(ulong userId, ulong steamId)
+    {
+        var steamUserDataResult = await _steamBusinessService.GetSteamDataForApi(steamId);
+
+        if (steamUserDataResult.ResultOutcome != ResultEnum.Success)
+        {
+            return StatusCode((int)steamUserDataResult.StatusCode, steamUserDataResult.ErrorMessage);
+        }
+        return Ok(steamUserDataResult.Data);
     }
     
 }

@@ -41,7 +41,7 @@ public class SpotifyCacheService : ISpotifyCacheService
                     new HybridCacheEntryOptions
                     {
                         Expiration = TimeSpan.FromMinutes(15),
-                        LocalCacheExpiration = TimeSpan.FromMinutes(15)
+                        LocalCacheExpiration = TimeSpan.FromMinutes(5)
                     });
                 
                 return Result<SpotifyProfileDto>.AsSuccess(cachedData);

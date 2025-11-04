@@ -39,12 +39,12 @@ public class AnilistCacheService : IAnilistCacheService
                     {
                         _logger.LogApplicationMessage(DateTime.UtcNow,
                             "Cache miss - fetching latest Anilist profile data...");
-                        return await _anilistApiService.GetAnilistUserData(discordUserId);
+                        return await _anilistApiService.FetchAnilistDataFromApi(discordUserId);
                     },
                     new HybridCacheEntryOptions
                     {
                         Expiration = TimeSpan.FromMinutes(15),
-                        LocalCacheExpiration = TimeSpan.FromMinutes(15)
+                        LocalCacheExpiration = TimeSpan.FromMinutes(5)
                     });
 
                 return Result<AnilistProfileDto>.AsSuccess(cachedData);
@@ -52,7 +52,7 @@ public class AnilistCacheService : IAnilistCacheService
             }
             else
             {
-                var profileData = await  _anilistApiService.GetAnilistUserData(discordUserId);
+                var profileData = await  _anilistApiService.FetchAnilistDataFromApi(discordUserId);
                 return Result<AnilistProfileDto>.AsSuccess(profileData);
             }
         }

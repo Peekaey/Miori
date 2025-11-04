@@ -13,55 +13,91 @@ public class AggregateBusinessService : IAggregateBusinessService
     private readonly ISpotifyBusinessService _spotifyBusinessService;
     private readonly IAnilistBusinessService _anilistBusinessService;
     private readonly IUnraidBusinessService _unraidBusinessService;
+    private readonly ISteamBusinessService _steamBusinessService;
 
     public AggregateBusinessService(ILogger<AggregateBusinessService> logger,
         IDiscordBusinessService discordBusinessService,
         ISpotifyBusinessService spotifyBusinessService, IAnilistBusinessService anilistBusinessService,
-        IUnraidBusinessService unraidBusinessService)
+        IUnraidBusinessService unraidBusinessService, ISteamBusinessService steamBusinessService)
     {
         _logger = logger;
         _discordBusinessService = discordBusinessService;
         _spotifyBusinessService = spotifyBusinessService;
         _anilistBusinessService = anilistBusinessService;
         _unraidBusinessService = unraidBusinessService;
+        _steamBusinessService = steamBusinessService;
     }
         
 
-    public async Task<ApiResult<AggregateProfileDto>> GetAllProfileDataDto(ulong discordUserId)
+    public async Task<ApiResult<AggregateProfileDto>> GetAllProfileDataDto(ulong discordUserId, ulong? steamId)
     {
         try
         {
-            var discordProfileDtoTask = _discordBusinessService.GetDiscordPresence(discordUserId);
-            var anilistProfileDtoTask = _anilistBusinessService.GetAnilistProfileForApi(discordUserId);
-            var spotifyProfileDtoTask = _spotifyBusinessService.GetSpotifyProfileForApi(discordUserId);
-
-            await Task.WhenAll(discordProfileDtoTask, anilistProfileDtoTask, spotifyProfileDtoTask);
-
-            var discordProfileDtoResult = await discordProfileDtoTask;
-            var anilistProfileDtoResult = await anilistProfileDtoTask;
-            var spotifyProfileDtoResult = await spotifyProfileDtoTask;
-
             var aggregateprofileData = new AggregateProfileDto();
+
+            if (steamId.HasValue)
+            {
+                var discordProfileDtoTask = _discordBusinessService.GetDiscordPresence(discordUserId);
+                var anilistProfileDtoTask = _anilistBusinessService.GetAnilistProfileForApi(discordUserId);
+                var spotifyProfileDtoTask = _spotifyBusinessService.GetSpotifyProfileForApi(discordUserId);
+                var steamDataDtoTask =  _steamBusinessService.GetSteamDataForApi(steamId.Value);
             
-            // TODO when returning aggregate data, we want to reduce the noise that is returned.
-            // Therefore if the user is not authenticated or no data is returned, do not return the empty dto back to the
-            // controller api response
+                await Task.WhenAll(discordProfileDtoTask, anilistProfileDtoTask, spotifyProfileDtoTask, steamDataDtoTask);
+
+                var discordProfileDtoResult = await discordProfileDtoTask;
+                var anilistProfileDtoResult = await anilistProfileDtoTask;
+                var spotifyProfileDtoResult = await spotifyProfileDtoTask;
+                var steamDataDtoResult = await steamDataDtoTask;
+                
+                if (discordProfileDtoResult.ResultOutcome == ResultEnum.Success)
+                {
+                    aggregateprofileData.DiscordProfileData = discordProfileDtoResult.Data;
+                }
+
+                if (anilistProfileDtoResult.ResultOutcome == ResultEnum.Success)
+                {
+                    aggregateprofileData.AnilistProfileData = anilistProfileDtoResult.Data;
+                }
+
+                if (spotifyProfileDtoResult.ResultOutcome == ResultEnum.Success)
+                {
+                    aggregateprofileData.SpotifyProfileData = spotifyProfileDtoResult.Data;
+                }
+
+                if (steamDataDtoResult.ResultOutcome == ResultEnum.Success)
+                {
+                    aggregateprofileData.SteamApiData = steamDataDtoResult.Data;
+                }
+            }
+            else
+            {
+                var discordProfileDtoTask = _discordBusinessService.GetDiscordPresence(discordUserId);
+                var anilistProfileDtoTask = _anilistBusinessService.GetAnilistProfileForApi(discordUserId);
+                var spotifyProfileDtoTask = _spotifyBusinessService.GetSpotifyProfileForApi(discordUserId);
             
-            if (discordProfileDtoResult.ResultOutcome == ResultEnum.Success)
-            {
-                aggregateprofileData.DiscordProfileData = discordProfileDtoResult.Data;
-            }
+                await Task.WhenAll(discordProfileDtoTask, anilistProfileDtoTask, spotifyProfileDtoTask);
 
-            if (anilistProfileDtoResult.ResultOutcome == ResultEnum.Success)
-            {
-                aggregateprofileData.AnilistProfileData = anilistProfileDtoResult.Data;
-            }
+                var discordProfileDtoResult = await discordProfileDtoTask;
+                var anilistProfileDtoResult = await anilistProfileDtoTask;
+                var spotifyProfileDtoResult = await spotifyProfileDtoTask;
 
-            if (spotifyProfileDtoResult.ResultOutcome == ResultEnum.Success)
-            {
-                aggregateprofileData.SpotifyProfileData = spotifyProfileDtoResult.Data;
-            }
+            
+                if (discordProfileDtoResult.ResultOutcome == ResultEnum.Success)
+                {
+                    aggregateprofileData.DiscordProfileData = discordProfileDtoResult.Data;
+                }
 
+                if (anilistProfileDtoResult.ResultOutcome == ResultEnum.Success)
+                {
+                    aggregateprofileData.AnilistProfileData = anilistProfileDtoResult.Data;
+                }
+
+                if (spotifyProfileDtoResult.ResultOutcome == ResultEnum.Success)
+                {
+                    aggregateprofileData.SpotifyProfileData = spotifyProfileDtoResult.Data;
+                }
+            }
+            
             return ApiResult<AggregateProfileDto>.AsSuccess(aggregateprofileData);
         }
         catch (Exception ex)
