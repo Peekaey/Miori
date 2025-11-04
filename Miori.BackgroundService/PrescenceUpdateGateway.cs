@@ -14,7 +14,6 @@ public class PrescenceUpdateGateway : IPresenceUpdateGatewayHandler
     private readonly ILogger<PrescenceUpdateGateway> _logger;
     private readonly IDiscordBusinessService  _discordBusinessService;
     private readonly IHubContext<DiscordPresenceHub>  _discordPresenceHub;
-    private readonly string _groupName = "PresenceSubscription";
 
     
     public PrescenceUpdateGateway(ILogger<PrescenceUpdateGateway> logger, IDiscordBusinessService discordBusinessService,
@@ -32,20 +31,31 @@ public class PrescenceUpdateGateway : IPresenceUpdateGatewayHandler
     {
         _logger.LogApplicationMessage(DateTime.UtcNow, "Discord Presence Update Received");
         DiscordRichPresenceSocketDto dto = arg.MapToDto();
-        await SendSignalRMessage(dto);
+        await SendPresenceSocketMessage(dto, arg.User.Id);
     }
     
-    // TODO Add an api key as a potential option
-    private async Task SendSignalRMessage(DiscordRichPresenceSocketDto message)
+
+    private async Task SendPresenceSocketMessage(DiscordRichPresenceSocketDto message, ulong userId)
     {
+        await SendDiscordPresenceEndpointSocketMessage(message, userId);
+    }
+
+    // private async Task SendAllEndpointSocketMessage(DiscordRichPresenceSocketDto message, ulong userId)
+    // {
+    //     var allGroup = $"/all?id={userId}";
+    //
+    // }
+    private async Task SendDiscordPresenceEndpointSocketMessage(DiscordRichPresenceSocketDto message, ulong userId)
+    {
+        var rpGroup = $"/dp?id={userId}";
         try
         {
-            await _discordPresenceHub.Clients.Group(_groupName).SendAsync("ReceiveMessage", message);
-            _logger.LogApplicationMessage(DateTime.UtcNow,$"Broadcast to group '{_groupName}' completed" );
+            await _discordPresenceHub.Clients.Group(rpGroup).SendAsync("ReceiveMessage", message);
+            _logger.LogApplicationMessage(DateTime.UtcNow,$"Broadcast to group '{rpGroup}' completed" );
         }
         catch (Exception ex)
         {
-            _logger.LogApplicationException(DateTime.UtcNow, ex, $"Broadcast to group '{_groupName}' error");
+            _logger.LogApplicationException(DateTime.UtcNow, ex, $"Broadcast to group '{rpGroup}' error");
         }
     }
 }

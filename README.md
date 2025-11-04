@@ -157,3 +157,11 @@ A. Yes, you will need to make an OAuth application for each service respectively
 
 ### Credits    
 - Inspired by [Lanyard](https://github.com/Phineas/lanyard)
+
+
+### TO DO
+- Fix up Api/SignalR response models
+- Add automatic steamId lookup from custom vanity Url
+- Look at logging/standardisation
+- Decouple Spotify/Anilist/Steam data if the service isn't activated or the user isn't registered
+- SignalR /all endpoint for aggregated data - webhooks for updates triggered by cache updates

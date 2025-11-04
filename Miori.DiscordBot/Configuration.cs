@@ -115,7 +115,8 @@ public static class Configuration
     {
         host.AddModules(typeof(Program).Assembly);
         host.MapControllers();
-        host.MapHub<DiscordPresenceHub>("/presencehub");
+        host.MapHub<DiscordPresenceHub>("/socket/dp");
+        // host.MapHub<DiscordPresenceHub>("/socket/all");
         var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
         lifetime.ApplicationStarted.Register(void () =>
         {
