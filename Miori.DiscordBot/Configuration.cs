@@ -114,6 +114,25 @@ public static class Configuration
     {
         host.AddModules(typeof(Program).Assembly);
         host.MapControllers();
+        host.UseStatusCodePages(async context =>
+        {
+            var response = context.HttpContext.Response;
+
+            if (response.StatusCode == 404)
+            {
+                response.ContentType = "application/json";
+                await response.WriteAsJsonAsync(new
+                {
+                    error = "Route not found",
+                    message = "Route does not exist",
+                    path = context.HttpContext.Request.Path.Value
+                });
+            }
+        });
+
+        host.UseSwagger();
+        host.UseSwaggerUI();
+        
         host.MapHub<DiscordPresenceHub>("/socket/dp");
         // host.MapHub<DiscordPresenceHub>("/socket/all");
         var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
