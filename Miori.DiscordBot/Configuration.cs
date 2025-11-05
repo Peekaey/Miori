@@ -114,8 +114,6 @@ public static class Configuration
     {
         host.AddModules(typeof(Program).Assembly);
         host.MapControllers();
-        host.UseSwagger();
-        host.UseSwaggerUI();
         
         host.MapHub<DiscordPresenceHub>("/socket/dp");
         // host.MapHub<DiscordPresenceHub>("/socket/all");
