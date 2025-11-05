@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -36,6 +37,11 @@ public class UserController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetUserSpotifyProfileData(ulong userId)
     {
+        if (ValidateInput(userId.ToString()) == false)
+        {
+            return BadRequest("Missing required parameters or bad input");
+        }
+        
         var profileDtoResult = await _spotifyBusinessService.GetSpotifyProfileForApi(userId);
 
         if (profileDtoResult.ResultOutcome != ResultEnum.Success)
@@ -49,6 +55,11 @@ public class UserController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetUserAnilistProfileData(ulong userId)
     {
+        if (ValidateInput(userId.ToString()) == false)
+        {
+            return BadRequest("Missing required parameters or bad input");
+        }
+        
         var profileDtoResult = await _anilistBusinessService.GetAnilistProfileForApi(userId);
 
         if (profileDtoResult.ResultOutcome != ResultEnum.Success)
@@ -62,6 +73,10 @@ public class UserController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetUserDiscordPresence(ulong userId)
     {
+        if (ValidateInput(userId.ToString()) == false)
+        {
+            return BadRequest("Missing required parameters or bad input");
+        }
         var presenceResult = await _discordBusinessService.GetDiscordPresence(userId);
 
         if (presenceResult.ResultOutcome != ResultEnum.Success)
@@ -76,6 +91,10 @@ public class UserController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetUserAll(ulong userId, [FromQuery] string? steamId = null)
     {
+        if (ValidateInput(userId.ToString()) == false || ValidateNullableInput(steamId) == false)
+        {
+            return BadRequest("Missing required parameters or bad input");
+        }
         ulong? ulongSteamId = null;
         
         if (steamId != null)
@@ -96,6 +115,11 @@ public class UserController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetUserSteamData(ulong userId, string steamId)
     {
+        if (ValidateInput(userId.ToString()) == false || ValidateInput(steamId) == false)
+        {
+            return BadRequest("Missing required parameters or bad input");
+        }
+        
         ulong? ulongSteamId = await _steamBusinessService.MapSteamIdToUniqueSteamId(steamId);
 
         if (ulongSteamId == null)
@@ -111,5 +135,61 @@ public class UserController : ControllerBase
         }
         return Ok(steamUserDataResult.Data);
     }
+    
+    // Validate as required
+    
+    private bool ValidateInput(string? input)
+    {
+        if (string.IsNullOrEmpty(input))
+        {
+            return false;
+        }
+        
+        input = input.Trim();
+
+        if (input.Length > 32)
+        {
+            // Steam and Discord Id are 17 characters long
+            // Off instance this may be longer is vanity steam url
+            // keep a conservative limit
+            return false;
+        }
+
+        // Only allowed a-z, A-Z, 0-9 , _, -
+        if (!Regex.IsMatch(input, @"^[a-zA-Z0-9_-]+$"))
+        {
+            return false;
+        }
+
+        return true;
+    }
+    private bool ValidateNullableInput(string? input)
+    {
+        if (string.IsNullOrEmpty(input))
+        {
+            return true;
+        }
+        input = input.Trim();
+
+        if (input.Length > 32)
+        {
+            // Steam and Discord Id are 17 characters long
+            // Off instance this may be longer is vanity steam url
+            // keep a conservative limit
+            return false;
+        }
+
+        // Only allowed a-z, A-Z, 0-9 , _, -
+        if (!Regex.IsMatch(input, @"^[a-zA-Z0-9_-]+$"))
+        {
+            return false;
+        }
+
+        return true;
+    }
+    
+    
+    
+
     
 }

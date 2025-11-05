@@ -114,22 +114,6 @@ public static class Configuration
     {
         host.AddModules(typeof(Program).Assembly);
         host.MapControllers();
-        host.UseStatusCodePages(async context =>
-        {
-            var response = context.HttpContext.Response;
-
-            if (response.StatusCode == 404)
-            {
-                response.ContentType = "application/json";
-                await response.WriteAsJsonAsync(new
-                {
-                    error = "Route not found",
-                    message = "Route does not exist",
-                    path = context.HttpContext.Request.Path.Value
-                });
-            }
-        });
-
         host.UseSwagger();
         host.UseSwaggerUI();
         
@@ -155,8 +139,38 @@ public static class Configuration
             }
         });
     }
-    
-    
+
+    public static void ConfigureMinimalApiEndpoints(WebApplication host)
+    {
+        host.UseStatusCodePages(async context =>
+        {
+            var response = context.HttpContext.Response;
+
+            if (response.StatusCode == 404)
+            {
+                response.ContentType = "application/json";
+                await response.WriteAsJsonAsync(new
+                {
+                    message = "Route does not exist",
+                    path = context.HttpContext.Request.Path.Value
+                });
+            }
+        });
+
+        host.MapGet("/", async (HttpContext ctx) =>
+        {
+            var discordGatewayService = ctx.RequestServices.GetRequiredService<IDiscordGatewayService>();
+            var iConfig = ctx.RequestServices.GetRequiredService<IConfiguration>();
+            var memberCount = await discordGatewayService.GetGuiltUserCountAsync(iConfig.GetValue<ulong>("DiscordOwnerGuildId"));
+            var response = ctx.Response;
+            response.ContentType = "application/json";
+            await response.WriteAsJsonAsync(new
+            {
+                message = $"Miori provides Discord presence & various userdata from other platforms via a convenient REST Api or SignalR. See: https://github.com/Peekaey/Miori",
+                monitored_members = $"{memberCount}",
+            });
+        });
+    }
     public static void TestLogging(WebApplication host)
     {
         var logger = host.Services.GetRequiredService<ILogger<Program>>();

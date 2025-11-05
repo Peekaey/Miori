@@ -8,10 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Dtos\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="NetCord" Version="1.0.0-alpha.433" />
     </ItemGroup>
 

@@ -25,6 +25,29 @@ public class DiscordGatewayService : IDiscordGatewayService
         return guild.Presences.GetValueOrDefault(userId);
         
     }
+
+    public async Task<int?> GetGuiltUserCountAsync(ulong guildId)
+    {
+        var guild = _gatewayClient.Cache.Guilds.GetValueOrDefault(guildId);
+    
+        if (guild == null)
+        {
+            return null;
+        }
+
+        var botId = this._gatewayClient.Id;
+        var mutableMembers = guild.Users.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+        foreach (var member in mutableMembers)
+        {
+            if (member.Key == botId)
+            {
+                mutableMembers.Remove(member.Key);
+            }
+        }
+        return mutableMembers.Count;
+    
+    }
     
     
 }

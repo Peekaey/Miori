@@ -17,6 +17,7 @@ class Program
          
         var host = builder.Build();
         Configuration.ConfigureHost(host);
+        Configuration.ConfigureMinimalApiEndpoints(host);
         OAuthEndpoints.MapOauthEndpoints(host);
         host.Run();
         Console.WriteLine("Miori is running...");
