@@ -29,7 +29,7 @@ public class OauthHelpers : IOauthHelpers
                "client_id=" + clientId +
                "&redirect_uri=" + redirectUri + 
                "&response_type=code" + 
-               $"&state={GenerateStateParameter(userDiscordId, ExternalIntegrationType.Anilist)}";
+               $"&state={Uri.EscapeDataString(GenerateStateParameter(userDiscordId, ExternalIntegrationType.Anilist))}";
     }
     // https://developer.spotify.com/documentation/web-api/tutorials/code-flow
     public string GenerateSpotifyAuthorisationUrl(ulong userDiscordId)
@@ -42,7 +42,7 @@ public class OauthHelpers : IOauthHelpers
                $"&response_type=code" +
                $"&redirect_uri={redirectUri}" +
                $"&scope={Uri.EscapeDataString(_configuration["SpotifyScope"])}" +
-               $"&state={GenerateStateParameter(userDiscordId, ExternalIntegrationType.Spotify)}";
+               $"&state={Uri.EscapeDataString(GenerateStateParameter(userDiscordId, ExternalIntegrationType.Spotify))}";
     }
 
     public string GenerateStateParameter(ulong discordUserId, ExternalIntegrationType integrationType)
