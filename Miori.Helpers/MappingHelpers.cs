@@ -1,17 +1,19 @@
+using Miori.Models.Anilist;
 using Miori.Models.Discord;
+using Miori.Models.Spotify;
+using Miori.Models.Steam;
 using NetCord.Gateway;
 
 namespace Miori.Helpers;
 
 public static class MappingHelpers
 {
-    public static DiscordRichPresenceSocketDto MapToDto(this Presence presence)
+    public static DiscordMappedDto MapToDto(this Presence presence)
     {
-        return new DiscordRichPresenceSocketDto
+        return new DiscordMappedDto
         {
-            GuildId = presence.GuildId,
             Uuid = presence.User.Id,
-            DiscordActivities = presence.Activities?.Select(activity => new DiscordActivity
+            Activities = presence.Activities?.Select(activity => new DiscordActivityMappedDto
             {
                 ActivityName = activity.Name,
                 State = activity.State ?? string.Empty,
@@ -24,7 +26,89 @@ public static class MappingHelpers
                 TimeStampStartUtc = activity.Timestamps?.StartTime?.DateTime ?? DateTime.MinValue,
                 TimeStampEndUtc = activity.Timestamps?.EndTime?.DateTime ?? DateTime.MinValue,
                 ActivityType = activity.Type.ToString(), 
-            }).ToList() ?? new List<DiscordActivity>()
+            }).ToList() ?? new List<DiscordActivityMappedDto>()
+        };
+    }
+
+    public static SteamMappedDto MapToApiDto(this SteamApiResponses steamApiResponses)
+    {   
+        // Its ok if we use FirstOrDefault as we only allow inputs for one steamId at a time, so therefore steam API will
+        // only return one response at a time
+        return new SteamMappedDto
+        {
+            SteamId = steamApiResponses.PlayerSummaries.Response.Players.FirstOrDefault().SteamId ?? string.Empty,
+            ProfileUrl = steamApiResponses.PlayerSummaries.Response.Players.FirstOrDefault()?.ProfileUrl ?? string.Empty,
+            PersonaName = steamApiResponses.PlayerSummaries.Response.Players.FirstOrDefault()?.PersonaName ?? string.Empty,
+            Avatar = steamApiResponses.PlayerSummaries.Response.Players.FirstOrDefault()?.Avatar ?? string.Empty,
+            LastLogoffUtc = steamApiResponses.PlayerSummaries.Response.Players.FirstOrDefault()?.LastLogoff != null ? DateTimeOffset.FromUnixTimeSeconds(steamApiResponses.PlayerSummaries.Response.Players.FirstOrDefault().LastLogoff) : DateTime.MinValue,
+            TimeCreatedUtc = steamApiResponses.PlayerSummaries.Response.Players.FirstOrDefault()?.TimeCreated != null ? DateTimeOffset.FromUnixTimeSeconds(steamApiResponses.PlayerSummaries.Response.Players.FirstOrDefault().TimeCreated) : DateTime.MinValue,
+            RecentGames = steamApiResponses.RecentGames.Response.Games.Select(game => new SteamMappedRecentGamesDto
+            {
+                AppId = game.AppId,
+                Name = game.Name,
+                Playtime2Weeks = game.Playtime2Weeks,
+                PlaytimeForever = game.PlaytimeForever,
+                ImgIconUrl = game.ImgIconUrl != string.Empty ? $"https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/apps/{game.AppId}/{game.ImgIconUrl}.jpg" : string.Empty,
+                ImgHeaderUrl = game.ImgIconUrl != string.Empty ? $"https://cdn.cloudflare.steamstatic.com/steam/apps/{game.AppId}/header.jpg" : string.Empty,
+            }).ToList()
+        };
+    }
+
+    public static AnilistMappedDto MapToApiDto(this AnilistProfileDto anilistProfileDto)
+    {
+        return new AnilistMappedDto
+        {
+            Id = anilistProfileDto.AnilistProfileResponse.data.viewer.id,
+            Name = anilistProfileDto.AnilistProfileResponse.data.viewer.name,
+            AvatarUrl = anilistProfileDto.AnilistProfileResponse.data.viewer.avatar.large,
+            BannerImageUrl = anilistProfileDto.AnilistProfileResponse.data.viewer.bannerImage ?? string.Empty,
+            Statistics = new AnilistMappedStatisticsDto
+            {
+                Anime = new AnilistMappedStatisticsAnimeDto
+                {
+                    Count = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.anime.count,
+                    MeanScore = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.anime.meanScore,
+                    VolumesRead = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.anime.volumesRead,
+                },
+                Manga = new AnilistMappedStatisticsMangaDto
+                {
+                    ChaptersRead = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.manga.chaptersRead,
+                    Count = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.manga.count,
+                    MeanScore = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.manga.meanScore
+                }
+            }
+        };
+    }
+
+    public static SpotifyMappedDto MapToApiDto(this SpotifyProfileDto spotifyProfileDto)
+    {
+        return new SpotifyMappedDto
+        {
+            DisplayName = spotifyProfileDto.SpotifyProfile.display_name,
+            AvatarUrl = spotifyProfileDto.SpotifyProfile.images.FirstOrDefault()?.url ?? string.Empty,
+            ProfileUrl = spotifyProfileDto.SpotifyProfile.external_urls.spotify,
+            RecentlyPlayed = spotifyProfileDto.RecentlyPlayed.items.Select(track => new SpotifyMappedRecentlyPlayedDto
+            {
+                TrackName = track.track.name,
+                TrackId = track.track.id,
+                TrackUrl = track.track.external_urls.spotify,
+                PlayedAtUtc = track.played_at.Date,
+                Artists = track.track.artists.Select(artist => new SpotifyMappedArtistDto
+                {
+                    ArtistId = artist.id,
+                    ArtistName = artist.name,
+                    ArtistUrl = artist.external_urls.spotify
+                }).ToList()
+            }).ToList(),
+            UserPlaylists = spotifyProfileDto.UserPlaylists.items.Select(playlist => new SpotifyMappedUserPlaylistsResponse
+            {
+                PlaylistName = playlist.name,
+                PlaylistId = playlist.id,
+                PlaylistUrl = playlist.external_urls.spotify,
+                PlaylistCoverUrl = playlist.images.FirstOrDefault()?.url ?? string.Empty,
+                PlaylistDescription = playlist.description,
+                TotalTracks = playlist.tracks.total
+            }).ToList()
         };
     }
 }

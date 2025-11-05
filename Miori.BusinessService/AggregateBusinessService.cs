@@ -48,22 +48,22 @@ public class AggregateBusinessService : IAggregateBusinessService
                 
                 if (discordProfileDtoResult.ResultOutcome == ResultEnum.Success)
                 {
-                    aggregateprofileData.DiscordProfileData = discordProfileDtoResult.Data;
+                    aggregateprofileData.DiscordUserData = discordProfileDtoResult.Data;
                 }
 
                 if (anilistProfileDtoResult.ResultOutcome == ResultEnum.Success)
                 {
-                    aggregateprofileData.AnilistProfileData = anilistProfileDtoResult.Data;
+                    aggregateprofileData.AnilistUserData = anilistProfileDtoResult.Data;
                 }
 
                 if (spotifyProfileDtoResult.ResultOutcome == ResultEnum.Success)
                 {
-                    aggregateprofileData.SpotifyProfileData = spotifyProfileDtoResult.Data;
+                    aggregateprofileData.SpotifyUserData = spotifyProfileDtoResult.Data;
                 }
 
                 if (steamDataDtoResult.ResultOutcome == ResultEnum.Success)
                 {
-                    aggregateprofileData.SteamApiData = steamDataDtoResult.Data;
+                    aggregateprofileData.SteamUserData = steamDataDtoResult.Data;
                 }
             }
             else
@@ -81,17 +81,17 @@ public class AggregateBusinessService : IAggregateBusinessService
             
                 if (discordProfileDtoResult.ResultOutcome == ResultEnum.Success)
                 {
-                    aggregateprofileData.DiscordProfileData = discordProfileDtoResult.Data;
+                    aggregateprofileData.DiscordUserData = discordProfileDtoResult.Data;
                 }
 
                 if (anilistProfileDtoResult.ResultOutcome == ResultEnum.Success)
                 {
-                    aggregateprofileData.AnilistProfileData = anilistProfileDtoResult.Data;
+                    aggregateprofileData.AnilistUserData = anilistProfileDtoResult.Data;
                 }
 
                 if (spotifyProfileDtoResult.ResultOutcome == ResultEnum.Success)
                 {
-                    aggregateprofileData.SpotifyProfileData = spotifyProfileDtoResult.Data;
+                    aggregateprofileData.SpotifyUserData = spotifyProfileDtoResult.Data;
                 }
             }
             

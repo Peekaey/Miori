@@ -30,12 +30,12 @@ public class PrescenceUpdateGateway : IPresenceUpdateGatewayHandler
     public async ValueTask HandleAsync(Presence arg)
     {
         _logger.LogApplicationMessage(DateTime.UtcNow, "Discord Presence Update Received");
-        DiscordRichPresenceSocketDto dto = arg.MapToDto();
+        DiscordMappedDto dto = arg.MapToDto();
         await SendPresenceSocketMessage(dto, arg.User.Id);
     }
     
 
-    private async Task SendPresenceSocketMessage(DiscordRichPresenceSocketDto message, ulong userId)
+    private async Task SendPresenceSocketMessage(DiscordMappedDto message, ulong userId)
     {
         await SendDiscordPresenceEndpointSocketMessage(message, userId);
     }
@@ -45,7 +45,7 @@ public class PrescenceUpdateGateway : IPresenceUpdateGatewayHandler
     //     var allGroup = $"/all?id={userId}";
     //
     // }
-    private async Task SendDiscordPresenceEndpointSocketMessage(DiscordRichPresenceSocketDto message, ulong userId)
+    private async Task SendDiscordPresenceEndpointSocketMessage(DiscordMappedDto message, ulong userId)
     {
         var rpGroup = $"/dp?id={userId}";
         try

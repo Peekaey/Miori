@@ -45,13 +45,13 @@ public class AnilistBusinessService : IAnilistBusinessService
         return BasicResult.AsSuccess();
     }
 
-    public async Task<ApiResult<AnilistProfileDto>> GetAnilistProfileForApi(ulong discordUserId)
+    public async Task<ApiResult<AnilistMappedDto>> GetAnilistProfileForApi(ulong discordUserId)
     {
         var isAnilistFound = _appMemoryStore.TryGetAnilistToken(discordUserId, out var anilistToken);
 
         if (isAnilistFound == false)
         {
-            return ApiResult<AnilistProfileDto>.AsErrorDisplayFriendlyMessage("Anilist user registered to the provider discord user Id does not exist", HttpStatusCode.NotFound);
+            return ApiResult<AnilistMappedDto>.AsErrorDisplayFriendlyMessage("Anilist user registered to the provider discord user Id does not exist", HttpStatusCode.NotFound);
         }
 
         var profileResult = await _anilistCacheService.GetCachedAnilistProfile(discordUserId);
@@ -59,10 +59,12 @@ public class AnilistBusinessService : IAnilistBusinessService
         if (profileResult.ResultOutcome != ResultEnum.Success)
         {
             
-            return ApiResult<AnilistProfileDto>.AsInternalError();
+            return ApiResult<AnilistMappedDto>.AsInternalError();
         }
+
+        var dto = profileResult.Data.MapToApiDto();
         
-        return ApiResult<AnilistProfileDto>.AsSuccess(profileResult.Data);
+        return ApiResult<AnilistMappedDto>.AsSuccess(dto);
         
     }
     

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Miori.BusinessService.Interfaces;
 using Miori.Cache.Interfaces;
+using Miori.Helpers;
 using Miori.Models;
 using Miori.Models.Configuration;
 using Miori.Models.Enums;
@@ -20,15 +21,17 @@ public class SteamBusinessService : ISteamBusinessService
         _steamCacheService = steamCacheService;
     }
 
-    public async Task<ApiResult<SteamApiDto>> GetSteamDataForApi(ulong steamId)
+    public async Task<ApiResult<SteamMappedDto>> GetSteamDataForApi(ulong steamId)
     {
         var steamUserDataResult =  await _steamCacheService.GetCachedSteamData(steamId);
 
         if (steamUserDataResult.ResultOutcome != ResultEnum.Success)
         {
-            return ApiResult<SteamApiDto>.AsInternalError();
+            return ApiResult<SteamMappedDto>.AsInternalError();
         }
-        return ApiResult<SteamApiDto>.AsSuccess(steamUserDataResult.Data);
+
+        var dto = steamUserDataResult.Data.MapToApiDto();
+        return ApiResult<SteamMappedDto>.AsSuccess(dto);
     }
 
     public async Task<ulong?> MapSteamIdToUniqueSteamId(string steamId)

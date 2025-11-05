@@ -26,9 +26,9 @@ public class SteamApiService : ISteamApiService
         _httpClientFactory = httpClientFactory;
     }
     
-    public async Task<SteamApiDto> FetchSteamDataFromApiConcurrently(ulong discordUserId)
+    public async Task<SteamApiResponses> FetchSteamDataFromApiConcurrently(ulong discordUserId)
     {
-        var steamApiDto = new SteamApiDto();
+        var steamApiDto = new SteamApiResponses();
 
         var steamPlayerSummariesTask = GetPlayerSummaries(discordUserId);
         var steamRecentlyPlayedTask = GetRecentlyPlayedGames(discordUserId);

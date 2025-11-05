@@ -48,22 +48,24 @@ public class SpotifyBusinessService : ISpotifyBusinessService
         return BasicResult.AsSuccess();
     }
 
-    public async Task<ApiResult<SpotifyProfileDto>> GetSpotifyProfileForApi(ulong discordUserId)
+    public async Task<ApiResult<SpotifyMappedDto>> GetSpotifyProfileForApi(ulong discordUserId)
     {
         var isSpotifyFound = _appMemoryStore.TryGetSpotifyToken(discordUserId, out var spotifyToken);
 
         if (isSpotifyFound == false)
         {
-            return ApiResult<SpotifyProfileDto>.AsErrorDisplayFriendlyMessage("Spotify user registered to the provided discord user Id does not exist", HttpStatusCode.NotFound);
+            return ApiResult<SpotifyMappedDto>.AsErrorDisplayFriendlyMessage("Spotify user registered to the provided discord user Id does not exist", HttpStatusCode.NotFound);
         }
 
         var profileResult = await _spotifyCacheService.GetCachedSpotifyProfile(discordUserId);
 
         if (profileResult.ResultOutcome != ResultEnum.Success)
         {
-            return ApiResult<SpotifyProfileDto>.AsInternalError();
+            return ApiResult<SpotifyMappedDto>.AsInternalError();
         }
-        return ApiResult<SpotifyProfileDto>.AsSuccess(profileResult.Data);
+
+        var dto = profileResult.Data.MapToApiDto();
+        return ApiResult<SpotifyMappedDto>.AsSuccess(dto);
     }
     
     

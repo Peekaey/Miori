@@ -25,7 +25,7 @@ public class SteamCacheService : ISteamCacheService
         _steamApiService = steamApiService;
     }
 
-    public async Task<Result<SteamApiDto>> GetCachedSteamData(ulong steamId)
+    public async Task<Result<SteamApiResponses>> GetCachedSteamData(ulong steamId)
     {
         try
         {
@@ -45,18 +45,18 @@ public class SteamCacheService : ISteamCacheService
                         LocalCacheExpiration = TimeSpan.FromMinutes(5)
                     });
                 
-                return Result<SteamApiDto>.AsSuccess(cachedData);
+                return Result<SteamApiResponses>.AsSuccess(cachedData);
             }
             else
             {
                 var profileData = await _steamApiService.FetchSteamDataFromApiConcurrently(steamId);
-                return Result<SteamApiDto>.AsSuccess(profileData);
+                return Result<SteamApiResponses>.AsSuccess(profileData);
             }
         }
         catch (Exception ex)
         {
             _logger.LogApplicationException(DateTime.UtcNow, ex, "Error fetching Steam user data in cache layer");
-            return Result<SteamApiDto>.AsError(ex.Message);
+            return Result<SteamApiResponses>.AsError(ex.Message);
         }
     }
     
