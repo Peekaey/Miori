@@ -26,9 +26,9 @@ public class SteamMappedRecentGamesDto
     public int AppId { get; set; }
     [JsonPropertyName("name")]
     public string Name { get; set; }
-    [JsonPropertyName("playtime_2weeks")]
+    [JsonPropertyName("playtime_2weeks_minutes")]
     public int Playtime2Weeks { get; set; }
-    [JsonPropertyName("playtime_forever")]
+    [JsonPropertyName("playtime_forever_minutes")]
     public int PlaytimeForever { get; set; }
     [JsonPropertyName("img_icon_url")]
     public string ImgIconUrl { get; set; }

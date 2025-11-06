@@ -68,13 +68,15 @@ public static class MappingHelpers
                 {
                     Count = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.anime.count,
                     MeanScore = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.anime.meanScore,
-                    VolumesRead = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.anime.volumesRead,
+                    EpisodesWatched = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.anime.episodesWatched,
+                    MinutesWatched = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.anime.minutesWatched
                 },
                 Manga = new AnilistMappedStatisticsMangaDto
                 {
                     ChaptersRead = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.manga.chaptersRead,
                     Count = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.manga.count,
-                    MeanScore = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.manga.meanScore
+                    MeanScore = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.manga.meanScore,
+                    VolumesRead = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.manga.volumesRead,
                 }
             }
         };
@@ -111,4 +113,6 @@ public static class MappingHelpers
             }).ToList()
         };
     }
+    
+
 }

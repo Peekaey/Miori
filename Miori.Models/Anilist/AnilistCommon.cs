@@ -37,9 +37,10 @@ public class AnilistUserStatistics
 
 public class AnilistAnimeStatistics
 {
+    public int episodesWatched { get; set; }
+    public int minutesWatched { get; set; }
     public int count { get; set; }
     public double meanScore { get; set; }
-    public int volumesRead { get; set; }
 }
 
 public class AnilistMangaStatistics
@@ -47,5 +48,6 @@ public class AnilistMangaStatistics
     public int chaptersRead { get; set; }
     public int count { get; set; }
     public double meanScore { get; set; }
+    public int volumesRead { get; set; }
 }
 

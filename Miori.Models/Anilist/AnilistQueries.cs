@@ -29,10 +29,12 @@ public static class AnilistQueries
               anime {
                 count
                 meanScore
-                volumesRead
+                episodesWatched
+                minutesWatched
               }
               manga {
                 chaptersRead
+                volumesRead
                 count
                 meanScore
               }

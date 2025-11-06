@@ -30,14 +30,18 @@ public class AnilistMappedStatisticsAnimeDto
     public int Count { get; set; }
     [JsonPropertyName("mean_score")]
     public double MeanScore { get; set; }
-    [JsonPropertyName("volumes_read")]
-    public int VolumesRead { get; set; }
+    [JsonPropertyName("episodes_watched")]
+    public int EpisodesWatched { get; set; }
+    [JsonPropertyName("minutes_watched")]
+    public int MinutesWatched{ get; set; }
 }
 
 public class AnilistMappedStatisticsMangaDto
 {
     [JsonPropertyName("chapters_read")]
     public int ChaptersRead { get; set; }
+    [JsonPropertyName("volumes_read")]
+    public int VolumesRead { get; set; }
     [JsonPropertyName("count")]
     public int Count { get; set; }
     [JsonPropertyName("mean_score")]
