@@ -10,7 +10,7 @@ namespace Miori.Api.Rest;
 [ApiController]
 [RequestLoggingFilter]
 [ApiKeyAuth]
-[Route("api/v1/[Controller]")]
+[Route("v1/[Controller]")]
 public class UserController : ControllerBase
 {
     private readonly ILogger<UserController> _logger;
