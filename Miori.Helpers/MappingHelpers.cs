@@ -20,8 +20,8 @@ public static class MappingHelpers
                 Details = activity.Details ?? string.Empty,
                 LargeText = activity.Assets?.LargeText ?? string.Empty,
                 SmallText = activity.Assets?.SmallText ?? string.Empty,
-                LargeImageId = activity.Assets?.LargeImageId ?? string.Empty,
-                SmallImageId = activity.Assets?.SmallImageId ?? string.Empty,
+                LargeImageId = ParseActvityImage(activity.Assets?.LargeImageId, activity.ApplicationId.ToString()),
+                SmallImageId = ParseActvityImage(activity.Assets?.SmallImageId, activity.ApplicationId.ToString()),
                 CreatedAtUtc = activity.CreatedAt.UtcDateTime,
                 TimeStampStartUtc = activity.Timestamps?.StartTime?.DateTime ?? DateTime.MinValue,
                 TimeStampEndUtc = activity.Timestamps?.EndTime?.DateTime ?? DateTime.MinValue,
@@ -112,6 +112,22 @@ public static class MappingHelpers
                 TotalTracks = playlist.tracks.total
             }).ToList()
         };
+    }
+
+    public static string ParseActvityImage(string? imageUrl, string? applicationId)
+    {
+        if (string.IsNullOrEmpty(imageUrl) || string.IsNullOrEmpty(applicationId))
+        {
+            return string.Empty;
+        }
+        if (imageUrl.Contains("mp:"))
+        {
+            return imageUrl.Replace("mp:", "https://media.discordapp.net/");
+        }
+        else
+        {
+            return $"https://cdn.discordapp.com/app-assets/${applicationId}/${imageUrl}.png";
+        }
     }
     
 
