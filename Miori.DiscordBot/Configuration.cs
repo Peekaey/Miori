@@ -96,6 +96,15 @@ public static class Configuration
         if ( enableCaching != null && enableCaching.ToLower() == "true")
         {
             Console.WriteLine("Caching is enabled...");
+
+            if (!string.IsNullOrEmpty(builder.Configuration["RemoteCacheConnectionString"]))
+            {
+                Console.WriteLine("Remote cache connection string provided, registering external cache...");
+                builder.Services.AddStackExchangeRedisCache(options =>
+                {
+                    options.Configuration = builder.Configuration["RemoteCacheConnectionString"];
+                });
+            }
         }
     }
         
