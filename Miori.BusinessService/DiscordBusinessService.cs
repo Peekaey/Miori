@@ -33,14 +33,34 @@ public class DiscordBusinessService : IDiscordBusinessService
         {
             ulong guildId = ulong.Parse(_configuration["DiscordOwnerGuildId"]);
 
-            Presence? presence = await GetUserPresenceAsync(guildId, discordUserId);
+            var presenceTask = GetUserPresenceAsync(guildId, discordUserId);
+            var userTask = GetUserAsync(guildId, discordUserId);
+            
+            await Task.WhenAll(presenceTask, userTask);
+            
+            var presenceData =  await presenceTask;
+            var userData = await userTask;
+            
+            DiscordMappedDto dto = new DiscordMappedDto();
 
-            if (presence == null)
+            if (presenceData == null && userData == null)
             {
                 _logger.LogApplicationError(DateTime.UtcNow, $"Failed to get user presence for user {discordUserId}");
                 return ApiResult<DiscordMappedDto>.AsInternalError();
             }
-            return ApiResult<DiscordMappedDto>.AsSuccess(presence.MapToDto());
+            if (presenceData != null)
+            {
+                dto.Activities = presenceData.MapActivitesToDto();
+
+            }
+
+            if (userData != null)
+            {
+                dto.MapUserDataToDto(userData);
+            }
+            
+            
+            return ApiResult<DiscordMappedDto>.AsSuccess(dto);
         }
         catch (Exception ex)
         {
@@ -51,6 +71,11 @@ public class DiscordBusinessService : IDiscordBusinessService
     public async Task<Presence?> GetUserPresenceAsync(ulong guildId, ulong userId)
     {
         return await _discordGatewayService.GetUserPresenceAsync(guildId, userId);
+    }
+
+    public async Task<GuildUser?> GetUserAsync(ulong guildId, ulong userId)
+    {
+        return await _discordGatewayService.GetUserDataAsync(guildId, userId);
     }
 
     public async Task<GuildUser?> GetGuildMemberAsync(ulong guildId, ulong uuid)

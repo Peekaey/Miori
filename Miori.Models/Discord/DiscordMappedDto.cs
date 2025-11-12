@@ -6,6 +6,14 @@ public class DiscordMappedDto
 {
     [JsonPropertyName("uuid")]
     public ulong Uuid { get; set; }
+    [JsonPropertyName("banner_url")]
+    public string BannerUrl { get; set; }
+    [JsonPropertyName("avatar_url")]
+    public string AvatarUrl { get; set; }
+    [JsonPropertyName("global_username")]
+    public string UserName { get; set; }
+    [JsonPropertyName("created_at")]
+    public DateTimeOffset CreatedAt { get; set; }
     [JsonPropertyName("activities")]
     public List<DiscordActivityMappedDto> Activities { get; set; }
 }

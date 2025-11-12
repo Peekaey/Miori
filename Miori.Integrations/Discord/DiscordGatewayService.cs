@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using NetCord;
 using NetCord.Gateway;
 
 namespace Miori.Integrations.Discord;
@@ -22,8 +23,21 @@ public class DiscordGatewayService : IDiscordGatewayService
         {
             return null;
         }
+
         return guild.Presences.GetValueOrDefault(userId);
+
+    }
+
+    public async Task<GuildUser?> GetUserDataAsync(ulong guildId, ulong userId)
+    {
+        var guild = _gatewayClient.Cache.Guilds.GetValueOrDefault(guildId);
+
+        if (guild == null)
+        {
+            return null;
+        }
         
+        return guild.Users.GetValueOrDefault(userId);
     }
 
     public async Task<int?> GetGuiltUserCountAsync(ulong guildId)

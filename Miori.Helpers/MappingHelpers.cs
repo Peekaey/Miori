@@ -2,6 +2,7 @@ using Miori.Models.Anilist;
 using Miori.Models.Discord;
 using Miori.Models.Spotify;
 using Miori.Models.Steam;
+using NetCord;
 using NetCord.Gateway;
 
 namespace Miori.Helpers;
@@ -28,6 +29,34 @@ public static class MappingHelpers
                 ActivityType = activity.Type.ToString(), 
             }).ToList() ?? new List<DiscordActivityMappedDto>()
         };
+    }
+
+    public static List<DiscordActivityMappedDto> MapActivitesToDto(this Presence presence)
+    {
+        return presence.Activities?.Select(activity => new DiscordActivityMappedDto
+        {
+            ActivityName = activity.Name,
+            State = activity.State ?? string.Empty,
+            Details = activity.Details ?? string.Empty,
+            LargeText = activity.Assets?.LargeText ?? string.Empty,
+            SmallText = activity.Assets?.SmallText ?? string.Empty,
+            LargeImageId = ParseActvityImage(activity.Assets?.LargeImageId, activity.ApplicationId.ToString()),
+            SmallImageId = ParseActvityImage(activity.Assets?.SmallImageId, activity.ApplicationId.ToString()),
+            CreatedAtUtc = activity.CreatedAt.UtcDateTime,
+            TimeStampStartUtc = activity.Timestamps?.StartTime?.DateTime ?? DateTime.MinValue,
+            TimeStampEndUtc = activity.Timestamps?.EndTime?.DateTime ?? DateTime.MinValue,
+            ActivityType = activity.Type.ToString(),
+        }).ToList() ?? new List<DiscordActivityMappedDto>();
+    }
+
+    public static DiscordMappedDto MapUserDataToDto(this DiscordMappedDto dto, GuildUser user)
+    {
+        dto.AvatarUrl = user.GetAvatarUrl()?.ToString() ?? string.Empty;
+        dto.BannerUrl = user.GetBannerUrl()?.ToString() ?? string.Empty;
+        dto.CreatedAt = user.CreatedAt;
+        dto.UserName = user.Username;
+        dto.Uuid = user.Id;
+        return dto;
     }
 
     public static SteamMappedDto MapToApiDto(this SteamApiResponses steamApiResponses)
