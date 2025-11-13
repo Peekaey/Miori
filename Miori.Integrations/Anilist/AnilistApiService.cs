@@ -9,6 +9,7 @@ using Miori.Models;
 using Miori.Models.Anilist;
 using Miori.Models.Configuration;
 using Miori.Models.Spotify;
+using Miori.TokenStore;
 
 namespace Miori.Integrations.Anilist;
 
@@ -17,17 +18,17 @@ public class AnilistApiService : IAnilistApiService
     private readonly ILogger<AnilistApiService> _logger;
     private readonly IConfiguration  _configuration;
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly AppMemoryStore _appMemoryStore;
     private readonly string _apiEndpoint = "https://graphql.anilist.co";
+    private readonly ITokenStoreHelpers _tokenStoreHelpers;
     
     public AnilistApiService(ILogger<AnilistApiService> logger, IConfiguration configuration,
-        IHttpClientFactory httpClientFactory,
-        AppMemoryStore appMemoryStore)
+        IHttpClientFactory httpClientFactory,  ITokenStoreHelpers tokenStoreHelpers
+        )
     {
         _logger = logger;
         _configuration = configuration;
         _httpClientFactory = httpClientFactory;
-        _appMemoryStore = appMemoryStore;
+        _tokenStoreHelpers = tokenStoreHelpers;
     }
 
     public async Task<Result<int>> GetAnilistProfileIdForNewRegister(AnilistTokenResponse tokenResponse)
@@ -91,8 +92,7 @@ public class AnilistApiService : IAnilistApiService
     {
         try
         {
-            var isTokenExist = _appMemoryStore.TryGetAnilistToken(discordUserId, out var token);
-
+            var existingAnilistCache = await _tokenStoreHelpers.GetAnilistTokens(discordUserId);
             var requestBody = new
             {
                 query = AnilistQueries._currentUserStatistics
@@ -103,7 +103,7 @@ public class AnilistApiService : IAnilistApiService
 
             var httpClient = _httpClientFactory.CreateClient();
 
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", existingAnilistCache.AccessToken);
 
             var response = await httpClient.PostAsync(_apiEndpoint, content);
 

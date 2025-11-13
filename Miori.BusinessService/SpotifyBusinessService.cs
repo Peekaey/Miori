@@ -10,6 +10,7 @@ using Miori.Models;
 using Miori.Models.Configuration;
 using Miori.Models.Enums;
 using Miori.Models.Spotify;
+using Miori.TokenStore;
 
 namespace Miori.BusinessService;
 
@@ -19,18 +20,18 @@ public class SpotifyBusinessService : ISpotifyBusinessService
     private readonly ISpotifyApiService  _spotifyApiService;
     private readonly HybridCache _hybridCache;
     private readonly IConfiguration _configuration;
-    private readonly AppMemoryStore _appMemoryStore;
     private readonly ISpotifyCacheService  _spotifyCacheService;
+    private readonly ITokenStoreHelpers _tokenStoreHelpers;
     
     public SpotifyBusinessService(ILogger<SpotifyBusinessService> logger, ISpotifyApiService spotifyApiService, HybridCache hybridCache, 
-        IConfiguration configuration, AppMemoryStore appMemoryStore, ISpotifyCacheService spotifyCacheService)
+        IConfiguration configuration,ISpotifyCacheService spotifyCacheService, ITokenStoreHelpers tokenStoreHelpers )
     { 
         _logger = logger;
         _spotifyApiService = spotifyApiService;
         _hybridCache = hybridCache;
         _configuration = configuration;
-        _appMemoryStore = appMemoryStore;
         _spotifyCacheService = spotifyCacheService;
+        _tokenStoreHelpers = tokenStoreHelpers;
     }
     
 
@@ -44,15 +45,15 @@ public class SpotifyBusinessService : ISpotifyBusinessService
         }
         
         _logger.LogApplicationMessage(DateTime.UtcNow, $"Successfully tied Discord User Id : '{discordUserId}' to Spotify User : '{newProfileResponse.Data}'");
-        _appMemoryStore.AddOrUpdateSpotifyToken(discordUserId, SpotifyToken.Create(discordUserId, newProfileResponse.Data, tokenResponse.access_token, tokenResponse.refresh_token));
+        await _tokenStoreHelpers.AddOrUpdateSpotifyToken(discordUserId, SpotifyToken.Create(discordUserId, newProfileResponse.Data, tokenResponse.access_token, tokenResponse.refresh_token));
         return BasicResult.AsSuccess();
     }
 
     public async Task<ApiResult<SpotifyMappedDto>> GetSpotifyProfileForApi(ulong discordUserId)
     {
-        var isSpotifyFound = _appMemoryStore.TryGetSpotifyToken(discordUserId, out var spotifyToken);
+        var userCache = await _tokenStoreHelpers.GetSpotifyTokens(discordUserId);
 
-        if (isSpotifyFound == false)
+        if (userCache == null)
         {
             return ApiResult<SpotifyMappedDto>.AsErrorDisplayFriendlyMessage("Spotify user registered to the provided discord user Id does not exist", HttpStatusCode.NotFound);
         }

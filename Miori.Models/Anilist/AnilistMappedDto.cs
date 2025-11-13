@@ -8,6 +8,9 @@ public class AnilistMappedDto
     public int Id { get; set; }
     [JsonPropertyName("name")]
     public string Name { get; set; }
+    
+    [JsonPropertyName("siteUrl")]
+    public string SiteUrl { get; set; }
     [JsonPropertyName("avatar_url")]
     public string AvatarUrl { get; set; }
     [JsonPropertyName("banner_url")]

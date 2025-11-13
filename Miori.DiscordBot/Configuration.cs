@@ -15,6 +15,7 @@ using Miori.Integrations.Spotify;
 using Miori.Integrations.Spotify.Interfaces;
 using Miori.Integrations.Steam;
 using Miori.Models.Configuration;
+using Miori.TokenStore;
 using NetCord;
 using NetCord.Gateway;
 using NetCord.Hosting.Gateway;
@@ -59,7 +60,6 @@ public static class Configuration
         });
         
         builder.Services.AddSingleton<IDiscordRestService, DiscordRestService>();
-        builder.Services.AddSingleton<AppMemoryStore>();
         builder.Services.AddHttpClient();
         
         builder.Services.AddSingleton<ISpotifyApiService, SpotifyApiService>();
@@ -92,10 +92,11 @@ public static class Configuration
         
         var enableCaching = builder.Configuration["EnableCaching"];
         builder.Services.AddHybridCache();
+        builder.Services.AddSingleton<ITokenStoreHelpers, TokenStoreHelpers>();
         
         if ( enableCaching != null && enableCaching.ToLower() == "true")
         {
-            Console.WriteLine("Caching is enabled...");
+            Console.WriteLine("Caching is enabled, using in-app memory for caching of response data...");
 
             if (!string.IsNullOrEmpty(builder.Configuration["RemoteCacheConnectionString"]))
             {

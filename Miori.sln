@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Miori.BusinessService", "Mi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Miori.Caching", "Miori.Caching\Miori.Caching.csproj", "{18DA40DE-A5C6-4595-A4C2-FBFECD2B444B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Miori.AppTokenStore", "Miori.AppTokenStore\Miori.AppTokenStore.csproj", "{88169014-43C4-476A-8007-4263B950E636}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,5 +62,9 @@ Global
 		{18DA40DE-A5C6-4595-A4C2-FBFECD2B444B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{18DA40DE-A5C6-4595-A4C2-FBFECD2B444B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{18DA40DE-A5C6-4595-A4C2-FBFECD2B444B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88169014-43C4-476A-8007-4263B950E636}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88169014-43C4-476A-8007-4263B950E636}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88169014-43C4-476A-8007-4263B950E636}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88169014-43C4-476A-8007-4263B950E636}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

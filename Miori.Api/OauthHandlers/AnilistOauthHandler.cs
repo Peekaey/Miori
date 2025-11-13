@@ -10,6 +10,7 @@ using Miori.Models.Anilist;
 using Miori.Models.Configuration;
 using Miori.Models.Enums;
 using Miori.Models.Results;
+using Miori.TokenStore;
 
 namespace Miori.Api.OauthHandlers;
 
@@ -18,18 +19,16 @@ public class AnilistOauthHandler : IAnilistOauthHandler
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration  _configuration;
     private readonly ILogger<AnilistOauthHandler> _logger;
-    private readonly AppMemoryStore _appMemoryStore;
     private readonly IOauthHelpers _oauthHelpers;
     private readonly IAnilistBusinessService  _anilistBusinessService;
 
     public AnilistOauthHandler(IHttpClientFactory httpClientFactory, IConfiguration configuration,
-        ILogger<AnilistOauthHandler> logger, AppMemoryStore appMemoryStore, IOauthHelpers oauthHelpers,
+        ILogger<AnilistOauthHandler> logger, IOauthHelpers oauthHelpers,
         IAnilistBusinessService anilistBusinessService)
     {
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
         _logger = logger;
-        _appMemoryStore = appMemoryStore;
         _oauthHelpers = oauthHelpers;
         _anilistBusinessService = anilistBusinessService;
     }

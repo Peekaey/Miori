@@ -18,6 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Miori.AppTokenStore\Miori.AppTokenStore.csproj" />
       <ProjectReference Include="..\Miori.BusinessService\Miori.BusinessService.csproj" />
       <ProjectReference Include="..\Miori.Integrations\Miori.Integrations.csproj" />
       <ProjectReference Include="..\Miori.Models\Miori.Models.csproj" />

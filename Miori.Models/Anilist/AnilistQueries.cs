@@ -21,6 +21,7 @@ public static class AnilistQueries
           Viewer {
             id
             name
+            siteUrl
             avatar {
               large
             }

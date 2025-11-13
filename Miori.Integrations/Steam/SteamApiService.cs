@@ -14,15 +14,13 @@ public class SteamApiService : ISteamApiService
 {
     private readonly ILogger<SteamApiService> _logger;
     private readonly IConfiguration _configuration;
-    private readonly AppMemoryStore _appMemoryStore;
     private readonly IHttpClientFactory _httpClientFactory;
 
-    public SteamApiService(ILogger<SteamApiService> logger, IConfiguration configuration, AppMemoryStore appMemoryStore,
+    public SteamApiService(ILogger<SteamApiService> logger, IConfiguration configuration,
         IHttpClientFactory httpClientFactory)
     {
         _logger = logger;
         _configuration = configuration;
-        _appMemoryStore = appMemoryStore;
         _httpClientFactory = httpClientFactory;
     }
     

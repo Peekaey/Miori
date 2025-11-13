@@ -9,6 +9,7 @@ using Miori.Models;
 using Miori.Models.Configuration;
 using Miori.Models.Enums;
 using Miori.Models.Spotify;
+using Miori.TokenStore;
 
 namespace Miori.Integrations.Spotify;
 
@@ -19,15 +20,15 @@ public class SpotifyApiService : ISpotifyApiService
     private readonly ILogger<SpotifyApiService> _logger;
     private readonly IConfiguration _configuration;
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly AppMemoryStore _appMemoryStore;
+    private readonly ITokenStoreHelpers _tokenStoreHelpers;
     
-    public SpotifyApiService(ILogger<SpotifyApiService> logger, IConfiguration configuration, IHttpClientFactory httpClientFactory,
-        AppMemoryStore appMemoryStore)
+    public SpotifyApiService(ILogger<SpotifyApiService> logger, IConfiguration configuration, IHttpClientFactory httpClientFactory, 
+        ITokenStoreHelpers tokenStoreHelpers)
     {
         _logger = logger;
         _configuration = configuration;
         _httpClientFactory = httpClientFactory;
-        _appMemoryStore = appMemoryStore;
+        _tokenStoreHelpers = tokenStoreHelpers;
     }
 
     public async Task<Result<string>> GetSpotifyProfileIdForNewRegister(SpotifyTokenResponse tokenResponse)
@@ -108,10 +109,9 @@ public class SpotifyApiService : ISpotifyApiService
     {
         try
         {
-            var isTokensFound = _appMemoryStore.TryGetSpotifyToken(discordUserId, out var spotifyToken);
-            
+            var existingSpotifyCache = await _tokenStoreHelpers.GetSpotifyTokens(discordUserId);
             var request = new HttpRequestMessage(HttpMethod.Get, "https://api.spotify.com/v1/me");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", spotifyToken.AccessToken);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", existingSpotifyCache.AccessToken);
 
             var httpClient = _httpClientFactory.CreateClient();
             var response = await httpClient.SendAsync(request);
@@ -141,9 +141,9 @@ public class SpotifyApiService : ISpotifyApiService
 
     private async Task ValidateAndRefreshToken(ulong discordUserId)
     {
-        var userSpotifyToken = _appMemoryStore.TryGetSpotifyToken(discordUserId, out var spotifyToken);
-
-        if (spotifyToken.IsExpired == true)
+        var userSpotifyToken = await  _tokenStoreHelpers.GetSpotifyTokens(discordUserId);
+        
+        if (userSpotifyToken.IsExpired == true)
         {
             await RefreshAccessToken(discordUserId);
         }
@@ -154,8 +154,7 @@ public class SpotifyApiService : ISpotifyApiService
     {
         try
         {
-            var isTokensFound = _appMemoryStore.TryGetSpotifyToken(discordUserId, out var existingSpotifyToken);
-            
+            var existingSpotifyCache = await _tokenStoreHelpers.GetSpotifyTokens(discordUserId);
             
             var clientId = _configuration["SpotifyClientId"];
             var clientSecret = _configuration["SpotifyClientSecret"];
@@ -164,7 +163,7 @@ public class SpotifyApiService : ISpotifyApiService
             var tokenRequest = new Dictionary<string, string>
             {
                 ["grant_type"] = "refresh_token",
-                ["refresh_token"] = existingSpotifyToken.RefreshToken,
+                ["refresh_token"] = existingSpotifyCache.RefreshToken,
             };
 
             var request = new HttpRequestMessage(HttpMethod.Post, "https://accounts.spotify.com/api/token")
@@ -184,9 +183,9 @@ public class SpotifyApiService : ISpotifyApiService
                 if (tokenResponse != null)
                 {
                     // Use existing token as spotify generally returns "" for the refresh
-                    var newRefreshToken = string.IsNullOrEmpty(tokenResponse.refresh_token) ? existingSpotifyToken.RefreshToken : tokenResponse.refresh_token;
-                    var replacedTokenObject = existingSpotifyToken.WithRefreshedToken(newRefreshToken);    
-                    _appMemoryStore.AddOrUpdateSpotifyToken(discordUserId, replacedTokenObject);
+                    var newRefreshToken = string.IsNullOrEmpty(tokenResponse.refresh_token) ? existingSpotifyCache.RefreshToken : tokenResponse.refresh_token;
+                    var replacedTokenObject = existingSpotifyCache.WithRefreshedToken(newRefreshToken);    
+                    _tokenStoreHelpers.AddOrUpdateSpotifyToken(discordUserId, replacedTokenObject);
                     
                     _logger.LogApplicationMessage(DateTime.UtcNow, $"Successfully refreshed Spotify access token for {discordUserId} with Spotify user Id : '{replacedTokenObject.SpotifyUserId}'");
                 }
@@ -211,11 +210,10 @@ public class SpotifyApiService : ISpotifyApiService
     {
         try
         {
-            var isTokensFound = _appMemoryStore.TryGetSpotifyToken(discordUserId, out var spotifyToken);
-            
+            var existingSpotifyCache = await _tokenStoreHelpers.GetSpotifyTokens(discordUserId);
             var request = new HttpRequestMessage(HttpMethod.Get,
                 $"https://api.spotify.com/v1/me/player/recently-played?limit={limit}");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", spotifyToken.AccessToken);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", existingSpotifyCache.AccessToken);
 
             var httpClient = _httpClientFactory.CreateClient();
             var response = await httpClient.SendAsync(request);
@@ -247,10 +245,10 @@ public class SpotifyApiService : ISpotifyApiService
     {
         try
         {
-            var isTokensFound = _appMemoryStore.TryGetSpotifyToken(discordUserId, out var spotifyToken);
-            
-            var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.spotify.com/v1/users/{spotifyToken.SpotifyUserId}/playlists");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", spotifyToken.AccessToken);
+            var existingSpotifyCache = await _tokenStoreHelpers.GetSpotifyTokens(discordUserId);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.spotify.com/v1/users/{existingSpotifyCache.SpotifyUserId}/playlists");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", existingSpotifyCache.AccessToken);
 
             var httpClient = _httpClientFactory.CreateClient();
             var response = await httpClient.SendAsync(request);

@@ -89,6 +89,7 @@ public static class MappingHelpers
         {
             Id = anilistProfileDto.AnilistProfileResponse.data.viewer.id,
             Name = anilistProfileDto.AnilistProfileResponse.data.viewer.name,
+            SiteUrl = anilistProfileDto.AnilistProfileResponse.data.viewer.siteUrl,
             AvatarUrl = anilistProfileDto.AnilistProfileResponse.data.viewer.avatar.large,
             BannerImageUrl = anilistProfileDto.AnilistProfileResponse.data.viewer.bannerImage ?? string.Empty,
             Statistics = new AnilistMappedStatisticsDto

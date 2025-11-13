@@ -17,6 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Miori.AppTokenStore\Miori.AppTokenStore.csproj" />
       <ProjectReference Include="..\Miori.Helpers\Miori.Helpers.csproj" />
       <ProjectReference Include="..\Miori.Models\Miori.Models.csproj" />
     </ItemGroup>

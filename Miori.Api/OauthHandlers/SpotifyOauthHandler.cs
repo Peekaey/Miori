@@ -17,17 +17,15 @@ public class SpotifyOauthHandler : ISpotifyOauthHandler
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
     private readonly ILogger<SpotifyOauthHandler> _logger;
-    private readonly AppMemoryStore _appMemoryStore;
     private readonly IOauthHelpers _oauthHelpers;
     private readonly ISpotifyBusinessService  _spotifyBusinessService;
     
     public SpotifyOauthHandler(IHttpClientFactory httpClientFactory, IConfiguration configuration, 
-        ILogger<SpotifyOauthHandler> logger, AppMemoryStore appMemoryStore, IOauthHelpers oauthHelpers, ISpotifyBusinessService spotifyBusinessService)
+        ILogger<SpotifyOauthHandler> logger, IOauthHelpers oauthHelpers, ISpotifyBusinessService spotifyBusinessService)
     {
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
         _logger = logger;
-        _appMemoryStore = appMemoryStore;
         _oauthHelpers = oauthHelpers;
         _spotifyBusinessService = spotifyBusinessService;
     }
