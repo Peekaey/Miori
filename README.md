@@ -76,7 +76,7 @@ Example Response:
     "id": 286644,
     "name": "Peekaey",
     "siteUrl": "https://anilist.co/user/",
-    "avatar_url": "https://s4.anilist.co/file/anilistcdn/user/avatar/large/b286644-Vb0F13bfCOsK.jpg",
+    "avatar_url": "https://s4.anilist.co/file/anilistcdn/user/avatar/large/b286644-zuRiMWIANEdZ.png",
     "banner_url": "https://s4.anilist.co/file/anilistcdn/user/banner/b286644-ymkJ6JeoqqNI.jpg",
     "statistics": {
       "anime": {
@@ -156,9 +156,9 @@ REST
 Discord:           /v1/user/{discordUserid}/discord
 Spotify:           /v1/user/{discordUserid}/spotify
 Anilist:           /v1/user/{discordUserid}/anilist
-Steam:             /v1/user/{discordUserid}/anilist
+Steam:             /v1/user/{discordUserid}/steam/{steamUsername}
 All(W/O Steam):    /v1/user/{discordUserid}/all
-All(With Steam):   /v1/user/{discordUserid}/all?steamId=steamusername
+All(With Steam):   /v1/user/{discordUserid}/all?steamId={steamUsername}
 
 Socket (SignalR)
 Discord:           /socket/dp
