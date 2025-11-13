@@ -8,11 +8,11 @@ Information aggregated such as :
 - Anilist (basic user profile metadata, statistics of total anime/manga read/watched)
 - Steam (basic user profile metadata, data/playtime of recently played games)
 
-This information can then be retrived via a rest api endpoint (SignalR websocket is also available for rich presence).
+This information can then be retrived via a REST api endpoint (SignalR websocket is also available for rich presence).
 
 The purpose of this bot is to act as an aggregation of data when attempting to display data in personal portfolio sites from various integrations, such as displaying current activity in discord or currently listening song on spotify.
 
-This bot is currently considered feature complete for the time being. However more integrations or exposed data will be implemented adhoc as required (If you are after certain integrations or data, feel free to open a pull request and I can see if this can be implemented).
+This bot is currently considered feature complete for the time being. However more integrations or exposed data will be implemented adhoc as required (If you are after certain integrations or data, feel free to open a pull request and I'll see if I can get it implemented).
 
 ### Additional Misc Features
 -  Supports logging to Grafana Loki
@@ -148,6 +148,28 @@ Example Response:
     ]
   }
 }
+```
+
+Endpoints
+```
+REST
+Discord:           /v1/user/{discordUserid}/discord
+Spotify:           /v1/user/{discordUserid}/spotify
+Anilist:           /v1/user/{discordUserid}/anilist
+Steam:             /v1/user/{discordUserid}/anilist
+All(W/O Steam):    /v1/user/{discordUserid}/all
+All(With Steam):   /v1/user/{discordUserid}/all?steamId=steamusername
+
+Socket (SignalR)
+Discord:           /socket/dp
+
+PARAMS/HEADERS
+REST AUTH (If Enabled): Header: x-api-key Value: apikey 
+SIGNALR AUTH (If Enabled): Header: x-api-key Value: apikey
+SIGNALR userId: Header: userId Value: discordUserId
+
+Ideally would move this to swagger
+
 ```
 
 ## Docs - How to setup
