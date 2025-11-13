@@ -17,9 +17,9 @@ This bot is currently considered feature complete for the time being. However mo
 ### Additional Misc Features
 -  Supports logging to Grafana Loki
 -  Uses HybridCache for logging - Supports L1 in-memory cache and L2 distributed cache (Redis)
--  Spotify/Anilist authorisation over OAuth2 (auth link sent via discord)
+-  Spotify/Anilist authorisation over OAuth2 (auth link sent ephemerally via discord)
 -  No persistent storage of data (access tokens are only stored in memory) - However requires reauthorising on every startup unless using L2 cache
--  Enable/Disable option of using API Keys to protect endpoint
+-  Enable/Disable option of using API Keys to protect endpoints
 
 Example Response:
 ```
@@ -181,6 +181,7 @@ Ideally would move this to swagger
 4. After authentication, endpoints are ready to be used
 
 ## Docker
+Can pull the latest image directly via ```ghcr.io/peekaey/miori:latest```, otherwise   
 1. Build the docker image with ```docker build -t miori:latest .```
 2. Start the container
 <details>
@@ -216,15 +217,14 @@ miori:latest
 </details>    
 
 ## FAQ
-Q. Can I only use certain integrations instead of all 3?    
-A. Yes! Providing the discord guildId is mandatory. However the current validation is that config values are required for every integration, although this can be disabled easily in the program startup.     
-Q. How can I authenticate with the spotify/anilist api?       
-Q. Is there any setup required from Spotify/Anilist    
-A. Yes, you will need to make an OAuth application for each service and pass through the clientid/client secret/redirect uri for each service [Spotify](https://developer.spotify.com/dashboard]) [Anilist](https://anilist.co/settings/developer)    
+Q. Can I only use certain integrations instead of all 4?    
+A. Yes! Providing the discord guildId/bot token is mandatory. However the current validation is that config values are required for every integration, although this can be disabled easily in the program startup.      
+Q. Is there any setup required from Spotify/Anilist/Steam    
+A. Yes, you will need to make a OAuth application for both [Spotify](https://developer.spotify.com/dashboard]) and [Anilist](https://anilist.co/settings/developer) and provide the clientid/client secret/redirect uri for each service to the bot. Steam just requires an api key which can be obtained following the documentation found at [Steam Web API Documentation](https://steamcommunity.com/dev)
 
 ### Future Roadmap
 - Additional services (such as goodreads or apple music)
 - More thorough data provided or flexible queries
 
 ### Credits    
-- Heavily Inspired by [Lanyard](https://github.com/Phineas/lanyard). If you are after a simple, easy to use API purely for discord prich presence I would highly recommend lanyard
+- Heavily inspired by [Lanyard](https://github.com/Phineas/lanyard). If you are after a simple, easy to use API purely for discord presence data. I would highly recommend
