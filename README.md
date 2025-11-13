@@ -12,7 +12,7 @@ This information can then be retrived via a REST api endpoint (SignalR websocket
 
 The purpose of this bot is to act as an aggregation of data when attempting to display data in personal portfolio sites from various integrations, such as displaying current activity in discord or currently listening song on spotify.
 
-This bot is currently considered feature complete for the time being. However more integrations or exposed data will be implemented adhoc as required (If you are after certain integrations or data, feel free to open a pull request and I'll see if I can get it implemented).
+This bot is currently considered feature complete for the time being. However more integrations or exposed data will be implemented adhoc as required (If you are after certain integrations or data, feel free to open an issue and I'll see if I can get it implemented).
 
 ### Additional Misc Features
 -  Supports logging to Grafana Loki
