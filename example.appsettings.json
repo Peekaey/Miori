@@ -18,5 +18,9 @@
   "EnableApiKey": "",
   "ApiKey": "",
   "StateSigningKey": "",
-  "SteamApiKey": ""
+  "SteamApiKey": "",
+  "OsuClientId": "",
+  "OsuClientSecret": "",
+  "OsuRedirectUri": "",
+  "OsuScope": ""
 }

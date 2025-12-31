@@ -146,6 +146,68 @@ Example Response:
         "img_header_url": "https://cdn.cloudflare.steamstatic.com/steam/apps/1422450/header.jpg"
       }
     ]
+  },
+  "OsuUserData": {
+    "id": 8611494,
+    "avatar_url": "https://a.ppy.sh/8611494?1762034658.jpeg",
+    "cover_url": "https://assets.ppy.sh/user-cover-presets/21/4e70615c027f579b2a887ec492857fb342fc0fc7f5586db62a9a67f115638c94.jpeg",
+    "username": "Peekay",
+    "join_date": "2016-06-25T11:46:52+00:00",
+    "cover": {
+      "custom_url": "https://assets.ppy.sh/user-cover-presets/21/4e70615c027f579b2a887ec492857fb342fc0fc7f5586db62a9a67f115638c94.jpeg",
+      "url": "https://assets.ppy.sh/user-cover-presets/21/4e70615c027f579b2a887ec492857fb342fc0fc7f5586db62a9a67f115638c94.jpeg"
+    },
+    "recentScores": [
+      {
+        "accuracy": 0.9029745042492918,
+        "id": 5986346143,
+        "max_combo": 234,
+        "mode": "osu",
+        "mods": [],
+        "passed": true,
+        "pp": 49.6081,
+        "rank": "B",
+        "score": 0,
+        "statistics": {
+          "count_100": 77,
+          "count_300": 611,
+          "count_50": 5,
+          "count_geki": null,
+          "count_katu": null,
+          "count_miss": 13
+        },
+        "beatmap": {
+          "difficulty_rating": 4.86585,
+          "id": 3862017,
+          "mode": "osu",
+          "ranked": 1,
+          "version": "Kowari's Insane",
+          "accuracy": 8,
+          "ar": 9,
+          "bpm": 174,
+          "drain": 5,
+          "url": "https://osu.ppy.sh/beatmaps/3862017"
+        },
+        "beatmapSet": {
+          "artist": "Fox Stevenson",
+          "creator": "Sotarks",
+          "id": 1876102,
+          "title": "Good Time",
+          "status": "ranked",
+          "preview_url": "//b.ppy.sh/preview/1876102.mp3",
+          "covers": {
+            "cover": "https://assets.ppy.sh/beatmaps/1876102/covers/cover.jpg?1668537488",
+            "cover2x": null,
+            "card": "https://assets.ppy.sh/beatmaps/1876102/covers/card.jpg?1668537488",
+            "card2x": null,
+            "list": "https://assets.ppy.sh/beatmaps/1876102/covers/list.jpg?1668537488",
+            "list2x": null,
+            "slimCover": "https://assets.ppy.sh/beatmaps/1876102/covers/slimcover.jpg?1668537488",
+            "slimCover2x": null
+          }
+        }
+      }
+    ]
   }
 }
 ```
@@ -156,6 +218,7 @@ REST
 Discord:           /v1/user/{discordUserid}/discord
 Spotify:           /v1/user/{discordUserid}/spotify
 Anilist:           /v1/user/{discordUserid}/anilist
+Osu:               /v1/user/{discordUserid}/osu
 Steam:             /v1/user/{discordUserid}/steam/{steamUsername}
 All(W/O Steam):    /v1/user/{discordUserid}/all
 All(With Steam):   /v1/user/{discordUserid}/all?steamId={steamUsername}
@@ -211,7 +274,11 @@ docker run -d \
 -e EnableApiKey="True" \
 -e ApiKey="" \
 -e StateSigningKey="" \
--e SteamApiKey=""
+-e SteamApiKey="" \
+-e OsuClientId="" \
+-e OsuClientSecret="" \
+-e OsuRedirectUri="" \
+-e OsuScope="public"
 miori:latest
 </code>
 </details>    
