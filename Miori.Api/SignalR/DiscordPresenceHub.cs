@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Miori.Helpers;
+using SignalRSwaggerGen.Attributes;
 
 namespace Miori.Api.SignalR;
 

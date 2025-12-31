@@ -14,11 +14,20 @@ class Program
         Configuration.ConfigureServices(builder);
         Configuration.AddOauthHandlerEndpoints(builder);
         Configuration.ConfigureRemoteLogging(builder);
-         
+
+        builder.Services.AddSwaggerGen();
+        
         var host = builder.Build();
         Configuration.ConfigureHost(host);
         Configuration.ConfigureMinimalApiEndpoints(host);
         OAuthEndpoints.MapOauthEndpoints(host);
+
+        if (!host.Environment.IsDevelopment())
+        {
+            host.UseSwagger();
+            host.UseSwaggerUI();
+        }
+
         host.Run();
         Console.WriteLine("Miori is running...");
     }

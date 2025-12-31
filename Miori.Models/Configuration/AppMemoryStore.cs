@@ -85,8 +85,6 @@ public class AnilistToken
 public class SpotifyToken
 {
     // By Default The Token Only Lasts 1 Hour
-    // We will only capture one set of tokens/Ids as we do not currently need to store more than one persons
-    // set of tokens/data as registration will only be allowed to one user
     public ulong DiscordUserId { get; set; }
     public string SpotifyUserId { get; set; }
     public string AccessToken { get; set; }
@@ -123,6 +121,55 @@ public class SpotifyToken
         {
             DiscordUserId = DiscordUserId,
             SpotifyUserId = newRefreshToken,
+            AccessToken = AccessToken,
+            RefreshToken = newRefreshToken,
+            IssuedAtUtc = now,
+            ExpiresAtUtc = now.AddHours(1),
+            TokenType = TokenType
+        };
+    }
+}
+
+public class OsuToken
+{
+    // By Default The Token Lasts 24 Hours
+    
+    public ulong DiscordUserId { get; set; }
+    public string OsuUserId { get; set; }
+    public string AccessToken { get; set; }
+    public string RefreshToken { get; set; }
+    public DateTime IssuedAtUtc { get; set; }
+    public DateTime ExpiresAtUtc { get; set; }
+    public TokenType TokenType { get; set; } = TokenType.Bearer;
+    
+    public bool IsExpired => DateTime.UtcNow >= ExpiresAtUtc;
+    public bool NeedsRefresh => DateTime.UtcNow >= ExpiresAtUtc.AddMinutes(-5); // Refresh 5 min before expiry
+    public TimeSpan TimeUntilExpiration => ExpiresAtUtc - DateTime.UtcNow;
+
+    public static OsuToken Create(ulong discordUserId, string osuUserId, string accessToken,
+        string refreshToken, TokenType tokenType = TokenType.Bearer)
+    {
+        var now = DateTime.UtcNow;
+        return new OsuToken
+        {
+            DiscordUserId = discordUserId,
+            OsuUserId = osuUserId,
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            IssuedAtUtc = now,
+            ExpiresAtUtc = now.AddHours(1),
+            TokenType = tokenType
+        };
+    }
+
+    public OsuToken WithRefreshedToken(string newRefreshToken)
+    {
+        var now = DateTime.UtcNow;
+
+        return new OsuToken
+        {
+            DiscordUserId = DiscordUserId,
+            OsuUserId = newRefreshToken,
             AccessToken = AccessToken,
             RefreshToken = newRefreshToken,
             IssuedAtUtc = now,

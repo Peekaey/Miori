@@ -19,11 +19,12 @@ public class UserController : ControllerBase
     private readonly IDiscordBusinessService _discordBusinessService;
     private readonly IAggregateBusinessService _aggregateBusinessService;
     private readonly ISteamBusinessService _steamBusinessService;
+    private readonly IOsuBusinessService _osuBusinessService;
 
     public UserController(ILogger<UserController> logger, IAnilistBusinessService anilistBusinessService, 
         ISpotifyBusinessService spotifyBusinessService, IDiscordBusinessService discordBusinessService, 
         IAggregateBusinessService aggregateBusinessService,
-        ISteamBusinessService steamBusinessService)
+        ISteamBusinessService steamBusinessService, IOsuBusinessService osuBusinessService)
     {
         _logger = logger;
         _anilistBusinessService = anilistBusinessService;
@@ -31,6 +32,7 @@ public class UserController : ControllerBase
         _discordBusinessService = discordBusinessService;
         _aggregateBusinessService = aggregateBusinessService;
         _steamBusinessService = steamBusinessService;
+        _osuBusinessService = osuBusinessService;
     }
 
     [HttpGet("{userId}/spotify")]
@@ -85,6 +87,24 @@ public class UserController : ControllerBase
             
         }
         return Ok(presenceResult.Data);
+    }
+
+    [HttpGet("{userId}/osu")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetUserOsuProfileData(ulong userId)
+    {
+        if (ValidateInput(userId.ToString()) == false)
+        {
+            return BadRequest("Missing required parameters or bad input");
+        }
+        
+        var profileDtoResult = await _osuBusinessService.GetOsuProfileForApi(userId);
+
+        if (profileDtoResult.ResultOutcome != ResultEnum.Success)
+        {
+            return StatusCode((int)profileDtoResult.StatusCode, profileDtoResult.ErrorMessage);
+        }
+        return Ok(profileDtoResult.Data);
     }
 
     [HttpGet("{userId}/all/")]

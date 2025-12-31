@@ -1,5 +1,6 @@
 using Miori.Models.Anilist;
 using Miori.Models.Discord;
+using Miori.Models.Osu;
 using Miori.Models.Spotify;
 using Miori.Models.Steam;
 using NetCord;
@@ -111,7 +112,7 @@ public static class MappingHelpers
             }
         };
     }
-
+    
     public static SpotifyMappedDto MapToApiDto(this SpotifyProfileDto spotifyProfileDto)
     {
         return new SpotifyMappedDto
@@ -140,6 +141,77 @@ public static class MappingHelpers
                 PlaylistCoverUrl = playlist.images.FirstOrDefault()?.url ?? string.Empty,
                 PlaylistDescription = playlist.description,
                 TotalTracks = playlist.tracks.total
+            }).ToList()
+        };
+    }
+    
+    public static OsuMappedDto MapToApiDto(this OsuProfileDto osuProfileDto)
+    {
+        return new OsuMappedDto
+        {
+            Id = osuProfileDto.OsuProfile.id,
+            Avatar_url = osuProfileDto.OsuProfile.avatar_url,
+            Cover_url = osuProfileDto.OsuProfile.cover_url,
+            Username = osuProfileDto.OsuProfile.username,
+            Join_date = osuProfileDto.OsuProfile.join_date,
+            Cover = new OsuCoverDto
+            {
+                Custom_url = osuProfileDto.OsuProfile.cover.url,
+                Url = osuProfileDto.OsuProfile.cover.url,
+            },
+            RecentScores = osuProfileDto.RecentScores.Select(score => new OsuRecentScoreDto
+            {
+                Accuracy = score.accuracy,
+                Id = score.id,
+                Max_combo = score.max_combo,
+                Mode = score.mode,
+                Mods = score.mods,
+                Passed = score.passed,
+                PP = score.pp,
+                Rank = score.rank,
+                Score = score.score,
+                Statistics = new OsuScoreStatisticsDto
+                {
+                    Count_100 = score.statistics.count_100,
+                    Count_300 = score.statistics.count_300,
+                    Count_50 = score.statistics.count_50,
+                    Count_geki = score.statistics.count_geki,
+                    Count_katu = score.statistics.count_katu,
+                    Count_miss = score.statistics.count_miss,
+                },
+                Beatmap = new OsuBeatmapDto
+                {
+                    Difficulty_rating = score.beatmap.difficulty_rating,
+                    Id = score.beatmap.id,
+                    Mode = score.beatmap.mode,
+                    Ranked = score.beatmap.ranked,
+                    Version = score.beatmap.version,
+                    Accuracy = score.beatmap.accuracy,
+                    Ar = score.beatmap.ar,
+                    Bpm = score.beatmap.bpm,
+                    Drain = score.beatmap.drain,
+                    Url = score.beatmap.url,
+                },
+                BeatmapSet = new OsuBeatmapSetDto()
+                {
+                    Artist = score.beatmapset.artist,
+                    Creator = score.beatmapset.creator,
+                    Id = score.beatmapset.id,
+                    Title = score.beatmapset.title,
+                    Status = score.beatmapset.status,
+                    Preview_url = score.beatmapset.preview_url,
+                    Covers = new OsuBeatmapSetCoversDto
+                    {
+                        Cover = score.beatmapset.covers.cover,
+                        Cover2x = score.beatmapset.covers.cover2x,
+                        Card = score.beatmapset.covers.card,
+                        Card2x = score.beatmapset.covers.card2x,
+                        List = score.beatmapset.covers.list,
+                        List2x = score.beatmapset.covers.list2x,
+                        SlimCover = score.beatmapset.covers.slimcover,
+                        SlimCover2x = score.beatmapset.covers.slimcover2x,
+                    }
+                }
             }).ToList()
         };
     }

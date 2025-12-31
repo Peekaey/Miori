@@ -15,6 +15,7 @@
       <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
       <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.10" />
       <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.10" />
+      <PackageReference Include="SignalRSwaggerGen.Core" Version="1.5.0" />
     </ItemGroup>
 
     <ItemGroup>

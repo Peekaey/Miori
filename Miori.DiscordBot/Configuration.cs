@@ -11,6 +11,7 @@ using Miori.Helpers;
 using Miori.Integrations.Anilist;
 using Miori.Integrations.Anilist.Interfaces;
 using Miori.Integrations.Discord;
+using Miori.Integrations.Osu;
 using Miori.Integrations.Spotify;
 using Miori.Integrations.Spotify.Interfaces;
 using Miori.Integrations.Steam;
@@ -65,16 +66,19 @@ public static class Configuration
         builder.Services.AddSingleton<ISpotifyApiService, SpotifyApiService>();
         builder.Services.AddSingleton<IAnilistApiService, AnilistApiService>();
         builder.Services.AddSingleton<ISteamApiService, SteamApiService>();
-
+        builder.Services.AddSingleton<IOsuApiService, OsuApiService>();
+        
         builder.Services.AddSingleton<IAnilistBusinessService, AnilistBusinessService>();
         builder.Services.AddSingleton<IDiscordBusinessService, DiscordBusinessService>();
         builder.Services.AddSingleton<ISpotifyBusinessService, SpotifyBusinessService>();
         builder.Services.AddSingleton<IAggregateBusinessService, AggregateBusinessService>();
         builder.Services.AddSingleton<ISteamBusinessService, SteamBusinessService>();
+        builder.Services.AddSingleton<IOsuBusinessService, OsuBusinessService>();
         
         builder.Services.AddSingleton<IAnilistCacheService, AnilistCacheService>();
         builder.Services.AddSingleton<ISpotifyCacheService, SpotifyCacheService>();
         builder.Services.AddSingleton<ISteamCacheService, SteamCacheService>();
+        builder.Services.AddSingleton<IOsuCacheService, OsuCacheService>();
         
         builder.Services.AddSingleton<IDiscordGatewayService, DiscordGatewayService>();
         builder.Services.AddSingleton<IDiscordRestService, DiscordRestService>();
@@ -114,6 +118,7 @@ public static class Configuration
         var port = builder.Configuration.GetValue<int>("NetworkPort", 5001);
         builder.Services.AddSingleton<ISpotifyOauthHandler, SpotifyOauthHandler>();
         builder.Services.AddSingleton<IAnilistOauthHandler, AnilistOauthHandler>();
+        builder.Services.AddSingleton<IOsuOauthHandler, OsuOauthHandler>();
         builder.WebHost.ConfigureKestrel(options =>
         {
             options.ListenAnyIP(port);

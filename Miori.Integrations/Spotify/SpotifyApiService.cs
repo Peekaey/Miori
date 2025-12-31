@@ -52,8 +52,8 @@ public class SpotifyApiService : ISpotifyApiService
 
             if (responseContent == null)
             {
-                _logger.LogApplicationError(DateTime.UtcNow, "Failed to deserialise the respons from the Spotify API");
-                return Result<string>.AsFailure("Failed to deserialise the respons from the Spotify API");
+                _logger.LogApplicationError(DateTime.UtcNow, "Failed to deserialise the response from the Spotify API");
+                return Result<string>.AsFailure("Failed to deserialise the response from the Spotify API");
             }
 
             return Result<string>.AsSuccess(responseContent.id);

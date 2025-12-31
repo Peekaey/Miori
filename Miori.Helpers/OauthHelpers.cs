@@ -45,6 +45,22 @@ public class OauthHelpers : IOauthHelpers
                $"&state={Uri.EscapeDataString(GenerateStateParameter(userDiscordId, ExternalIntegrationType.Spotify))}";
     }
 
+    // https://osu.ppy.sh/docs/#authorization-code-grant
+    public string GenerateOsuAuthorisationUrl(ulong userDiscordId)
+    {
+        var clientId = _configuration["OsuClientId"];
+        var redirectUri = Uri.EscapeDataString(_configuration["OsuRedirectUri"]);
+        
+        return "https://osu.ppy.sh/oauth/authorize?" +
+               $"client_id={clientId}" +
+               $"&response_type=code" +
+               $"&redirect_uri={redirectUri}" +
+               $"&scope={Uri.EscapeDataString(_configuration["OsuScope"])}" +
+               $"&state={Uri.EscapeDataString(GenerateStateParameter(userDiscordId, ExternalIntegrationType.Osu))}";
+
+        
+    }
+    
     public string GenerateStateParameter(ulong discordUserId, ExternalIntegrationType integrationType)
     {
         var payload = new OAuthState

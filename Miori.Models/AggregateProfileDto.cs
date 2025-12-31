@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Miori.Models.Anilist;
 using Miori.Models.Discord;
+using Miori.Models.Osu;
 using Miori.Models.Spotify;
 using Miori.Models.Steam;
 
@@ -16,4 +17,6 @@ public class AggregateProfileDto
     public SpotifyMappedDto SpotifyUserData { get; set; }
     [JsonPropertyName("SteamUserData")]
     public SteamMappedDto  SteamUserData { get; set; }
+    [JsonPropertyName("OsuUserData")]
+    public OsuMappedDto OsuUserData { get; set; }
 }

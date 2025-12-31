@@ -11,4 +11,7 @@ public interface ITokenStoreHelpers
     Task<BasicResult> RemoveAnilistToken(ulong discordUserId);
     Task<SpotifyToken?> GetSpotifyTokens(ulong discordUserId);
     Task<AnilistToken?> GetAnilistTokens(ulong discordUserId);
+    Task<OsuToken?> GetOsuTokens(ulong discordUserId);
+    Task<BasicResult> AddOrUpdateOsuToken(ulong discordUserId, OsuToken osuToken);
+    Task<BasicResult> RemoveOsuToken(ulong discordUserId);
 }

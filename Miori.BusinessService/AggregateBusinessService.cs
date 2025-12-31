@@ -13,16 +13,19 @@ public class AggregateBusinessService : IAggregateBusinessService
     private readonly ISpotifyBusinessService _spotifyBusinessService;
     private readonly IAnilistBusinessService _anilistBusinessService;
     private readonly ISteamBusinessService _steamBusinessService;
+    private readonly IOsuBusinessService _osuBusinessService;
 
     public AggregateBusinessService(ILogger<AggregateBusinessService> logger,
         IDiscordBusinessService discordBusinessService,
-        ISpotifyBusinessService spotifyBusinessService, IAnilistBusinessService anilistBusinessService,ISteamBusinessService steamBusinessService)
+        ISpotifyBusinessService spotifyBusinessService, IAnilistBusinessService anilistBusinessService,
+        ISteamBusinessService steamBusinessService, IOsuBusinessService osuBusinessService)
     {
         _logger = logger;
         _discordBusinessService = discordBusinessService;
         _spotifyBusinessService = spotifyBusinessService;
         _anilistBusinessService = anilistBusinessService;
         _steamBusinessService = steamBusinessService;
+        _osuBusinessService = osuBusinessService;
     }
         
 
@@ -38,13 +41,15 @@ public class AggregateBusinessService : IAggregateBusinessService
                 var anilistProfileDtoTask = _anilistBusinessService.GetAnilistProfileForApi(discordUserId);
                 var spotifyProfileDtoTask = _spotifyBusinessService.GetSpotifyProfileForApi(discordUserId);
                 var steamDataDtoTask =  _steamBusinessService.GetSteamDataForApi(steamId.Value);
-            
-                await Task.WhenAll(discordProfileDtoTask, anilistProfileDtoTask, spotifyProfileDtoTask, steamDataDtoTask);
+                var osuProfileDtoTask = _osuBusinessService.GetOsuProfileForApi(discordUserId);
+                
+                await Task.WhenAll(discordProfileDtoTask, anilistProfileDtoTask, spotifyProfileDtoTask, steamDataDtoTask,osuProfileDtoTask);
 
                 var discordProfileDtoResult = await discordProfileDtoTask;
                 var anilistProfileDtoResult = await anilistProfileDtoTask;
                 var spotifyProfileDtoResult = await spotifyProfileDtoTask;
                 var steamDataDtoResult = await steamDataDtoTask;
+                var osuProfileDtoResult = await osuProfileDtoTask;
                 
                 if (discordProfileDtoResult.ResultOutcome == ResultEnum.Success)
                 {
@@ -65,18 +70,25 @@ public class AggregateBusinessService : IAggregateBusinessService
                 {
                     aggregateprofileData.SteamUserData = steamDataDtoResult.Data;
                 }
+
+                if (osuProfileDtoResult.ResultOutcome == ResultEnum.Success)
+                {
+                    aggregateprofileData.OsuUserData = osuProfileDtoResult.Data;
+                }
             }
             else
             {
                 var discordProfileDtoTask = _discordBusinessService.GetDiscordPresence(discordUserId);
                 var anilistProfileDtoTask = _anilistBusinessService.GetAnilistProfileForApi(discordUserId);
                 var spotifyProfileDtoTask = _spotifyBusinessService.GetSpotifyProfileForApi(discordUserId);
-            
-                await Task.WhenAll(discordProfileDtoTask, anilistProfileDtoTask, spotifyProfileDtoTask);
+                var osuProfileDtoTask = _osuBusinessService.GetOsuProfileForApi(discordUserId);
+                
+                await Task.WhenAll(discordProfileDtoTask, anilistProfileDtoTask, spotifyProfileDtoTask, osuProfileDtoTask);
 
                 var discordProfileDtoResult = await discordProfileDtoTask;
                 var anilistProfileDtoResult = await anilistProfileDtoTask;
                 var spotifyProfileDtoResult = await spotifyProfileDtoTask;
+                var osuProfileDtoResult = await osuProfileDtoTask;
 
             
                 if (discordProfileDtoResult.ResultOutcome == ResultEnum.Success)
@@ -92,6 +104,11 @@ public class AggregateBusinessService : IAggregateBusinessService
                 if (spotifyProfileDtoResult.ResultOutcome == ResultEnum.Success)
                 {
                     aggregateprofileData.SpotifyUserData = spotifyProfileDtoResult.Data;
+                }
+
+                if (osuProfileDtoResult.ResultOutcome == ResultEnum.Success)
+                {
+                    aggregateprofileData.OsuUserData = osuProfileDtoResult.Data;
                 }
             }
             

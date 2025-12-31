@@ -11,6 +11,7 @@ public static class OAuthEndpoints
     {
         MapSpotifyOauthEndpoints(host);
         MapAnilistOauthEndpoints(host);
+        MapOsuOauthEndpoints(host);
     }
 
     private static void MapSpotifyOauthEndpoints(WebApplication host)
@@ -39,6 +40,29 @@ public static class OAuthEndpoints
         host.MapGet("/callback/anilist", async (
             HttpContext context,
             [FromServices] IAnilistOauthHandler oAuthHandler) =>
+        {
+            var code = context.Request.Query["code"].ToString();
+            var error = context.Request.Query["error"].ToString();
+            var state = context.Request.Query["state"].ToString();
+            
+            
+            var result = await oAuthHandler.HandleCallbackAsync(code, error, state);
+            if (result.IsSuccess)
+            {
+                return Results.Content(OAuthResponseBuilder.BuildSuccessPage(), "text/html");
+            }
+            else
+            {
+                return Results.Content(OAuthResponseBuilder.BuildErrorPage(result.ErrorMessage!), "text/html");
+            }
+        });
+    }
+    
+    private static void MapOsuOauthEndpoints(WebApplication host)
+    {
+        host.MapGet("/callback/osu", async (
+            HttpContext context,
+            [FromServices] IOsuOauthHandler oAuthHandler) =>
         {
             var code = context.Request.Query["code"].ToString();
             var error = context.Request.Query["error"].ToString();
