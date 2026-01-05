@@ -218,17 +218,26 @@ public static class MappingHelpers
 
     public static string ParseActvityImage(string? imageUrl, string? applicationId)
     {
-        if (string.IsNullOrEmpty(imageUrl) || string.IsNullOrEmpty(applicationId))
+        if (string.IsNullOrEmpty(imageUrl))
         {
             return string.Empty;
         }
+
+        // Means its spotify album art
+        // Remove the spotify: at the start and append the proper url
+        if (imageUrl.Contains("spotify:"))
+        {
+            return imageUrl.Replace("spotify:", "https://i.scdn.co/image/");
+
+        }
+        
         if (imageUrl.Contains("mp:"))
         {
             return imageUrl.Replace("mp:", "https://media.discordapp.net/");
         }
         else
         {
-            return $"https://cdn.discordapp.com/app-assets/${applicationId}/${imageUrl}.png";
+            return $"https://cdn.discordapp.com/app-assets/{applicationId}/{imageUrl}.png";
         }
     }
     

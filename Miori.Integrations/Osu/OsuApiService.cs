@@ -129,6 +129,7 @@ public class OsuApiService : IOsuApiService
     public async Task<OsuProfileDto> GetOsuUserData(ulong discordUserId)
     {
         // Don't handle any errors, let it bubble up and handle
+        await ValidateAndRefreshToken(discordUserId);
         return await FetchOsuDataFromApiConcurrently(discordUserId);
     }
 
