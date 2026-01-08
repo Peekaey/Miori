@@ -68,7 +68,7 @@ public class SpotifyApiService : ISpotifyApiService
     public async Task<SpotifyProfileDto> GetSpotifyUserData(ulong discordUserId)
     {
         // Don't handle any errors, let it bubble up and handle
-        await RefreshAccessToken(discordUserId);
+        await ValidateAndRefreshToken(discordUserId);
         return await FetchSpotifyDataFromApiConcurrently(discordUserId);
     }
 

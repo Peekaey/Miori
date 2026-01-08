@@ -33,10 +33,25 @@ public class SpotifyMappedRecentlyPlayedDto
     public string CombinedArtists
     {
         get { return string.Join(", ", Artists.Select(artists => artists.ArtistName)); }
-    }
-    // TODO Future
-    // [JsonPropertyName("track_cover_url")]
-    // public string SongArtUrl { get; set; }
+    } 
+    
+    [JsonPropertyName("album")]
+    public SpotifyMappedAlbumDto Album { get; set; }
+}
+
+public class SpotifyMappedAlbumDto
+{
+    [JsonPropertyName("album_name")]
+    public string Name { get; set; }
+    // First index of the list will have the url for the largest image
+    [JsonPropertyName("covers")]
+    public List<SpotifyMappedAlbumCoverDto> Covers { get; set; }
+}
+
+public class SpotifyMappedAlbumCoverDto
+{
+    [JsonPropertyName("album_url")]
+    public string url { get; set; }
 }
 
 public class SpotifyMappedArtistDto

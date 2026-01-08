@@ -14,7 +14,7 @@ public class SpotifyPlayHistory
 
 public class SpotifyTrack
 {
-    // public SpotifyAlbum album { get; set; } = new();
+    public SpotifyAlbum album { get; set; } = new();
     public List<SpotifyArtist> artists { get; set; } = new();
     // public List<string> available_markets { get; set; } = new();
     // public int disc_number { get; set; }

@@ -131,7 +131,15 @@ public static class MappingHelpers
                     ArtistId = artist.id,
                     ArtistName = artist.name,
                     ArtistUrl = artist.external_urls.spotify
-                }).ToList()
+                }).ToList(),
+                Album = new SpotifyMappedAlbumDto
+                {
+                    Name = track.track.album.name,
+                    Covers = track.track.album.images.Select(cover => new SpotifyMappedAlbumCoverDto
+                    {
+                        url = cover.url
+                    }).ToList()
+                }
             }).ToList(),
             UserPlaylists = spotifyProfileDto.UserPlaylists.items.Select(playlist => new SpotifyMappedUserPlaylistsResponse
             {
