@@ -207,7 +207,7 @@ public class SpotifyApiService : ISpotifyApiService
     }
 
     // https://developer.spotify.com/documentation/web-api/reference/get-recently-played
-    private async Task<Result<SpotifyRecentlyPlayedResponse>> GetSpotifyUserRecentlyPlayed(ulong discordUserId, int limit = 10)
+    private async Task<Result<SpotifyRecentlyPlayedResponse>> GetSpotifyUserRecentlyPlayed(ulong discordUserId, int limit = 12)
     {
         try
         {
