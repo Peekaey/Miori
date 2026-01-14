@@ -75,8 +75,8 @@ public class OsuApiService : IOsuApiService
         {
             var existingOsuCache = await _tokenStoreHelpers.GetOsuTokens(discordUserId);
 
-            var clientId = _configuration["Osu:ClientId"];
-            var clientSecret = _configuration["Osu:ClientSecret"];
+            var clientId = _configuration["OsuClientId"];
+            var clientSecret = _configuration["OsuClientSecret"];
 
             var tokenRequest = new Dictionary<string, string>
             {
@@ -90,6 +90,7 @@ public class OsuApiService : IOsuApiService
             {
                 Content = new FormUrlEncodedContent(tokenRequest)
             };
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
 
             var httpClient = _httpClientFactory.CreateClient();
