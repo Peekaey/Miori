@@ -41,8 +41,8 @@ public class AnilistToken
     public string AnilistUserId { get; set; }
     public string AccessToken { get; set; }
     public string RefreshToken { get; set; }
-    public DateTime IssuedAtUtc { get; set; }
-    public DateTime ExpiresAtUtc { get; set; }
+    public DateTimeOffset IssuedAtUtc { get; set; }
+    public DateTimeOffset ExpiresAtUtc { get; set; }
     public TokenType TokenType { get; set; } = TokenType.Bearer;
     
     public bool IsExpired => DateTime.UtcNow >= ExpiresAtUtc;
@@ -65,7 +65,7 @@ public class AnilistToken
         };
     }
 
-    public AnilistToken WithRefreshedToken(string newRefreshToken)
+    public AnilistToken WithRefreshedToken(string newAccessToken, string newRefreshToken)
     {
         var now = DateTime.UtcNow;
         
@@ -73,7 +73,7 @@ public class AnilistToken
         {
             DiscordUserId = DiscordUserId,
             AnilistUserId = AnilistUserId,
-            AccessToken = newRefreshToken,
+            AccessToken = newAccessToken,
             RefreshToken = newRefreshToken,
             IssuedAtUtc = now,
             ExpiresAtUtc = now.AddYears(1),
@@ -89,8 +89,8 @@ public class SpotifyToken
     public string SpotifyUserId { get; set; }
     public string AccessToken { get; set; }
     public string RefreshToken { get; set; }
-    public DateTime IssuedAtUtc { get; set; }
-    public DateTime ExpiresAtUtc { get; set; }
+    public DateTimeOffset IssuedAtUtc { get; set; }
+    public DateTimeOffset ExpiresAtUtc { get; set; }
     public TokenType TokenType { get; set; } = TokenType.Bearer;
     
     public bool IsExpired => DateTime.UtcNow >= ExpiresAtUtc;
@@ -113,15 +113,15 @@ public class SpotifyToken
         };
     }
 
-    public SpotifyToken WithRefreshedToken(string newRefreshToken)
+    public SpotifyToken WithRefreshedToken(string newAccessToken,string newRefreshToken)
     {
         var now = DateTime.UtcNow;
 
         return new SpotifyToken
         {
             DiscordUserId = DiscordUserId,
-            SpotifyUserId = newRefreshToken,
-            AccessToken = AccessToken,
+            SpotifyUserId = SpotifyUserId,
+            AccessToken = newAccessToken,
             RefreshToken = newRefreshToken,
             IssuedAtUtc = now,
             ExpiresAtUtc = now.AddHours(1),
@@ -138,8 +138,8 @@ public class OsuToken
     public string OsuUserId { get; set; }
     public string AccessToken { get; set; }
     public string RefreshToken { get; set; }
-    public DateTime IssuedAtUtc { get; set; }
-    public DateTime ExpiresAtUtc { get; set; }
+    public DateTimeOffset IssuedAtUtc { get; set; }
+    public DateTimeOffset ExpiresAtUtc { get; set; }
     public TokenType TokenType { get; set; } = TokenType.Bearer;
     
     public bool IsExpired => DateTime.UtcNow >= ExpiresAtUtc;
@@ -162,15 +162,15 @@ public class OsuToken
         };
     }
 
-    public OsuToken WithRefreshedToken(string newRefreshToken)
+    public OsuToken WithRefreshedToken(string newAccessToken, string newRefreshToken)
     {
         var now = DateTime.UtcNow;
 
         return new OsuToken
         {
             DiscordUserId = DiscordUserId,
-            OsuUserId = newRefreshToken,
-            AccessToken = AccessToken,
+            OsuUserId = OsuUserId,
+            AccessToken = newAccessToken,
             RefreshToken = newRefreshToken,
             IssuedAtUtc = now,
             ExpiresAtUtc = now.AddHours(1),

@@ -144,7 +144,7 @@ public class SpotifyApiService : ISpotifyApiService
     {
         var userSpotifyToken = await  _tokenStoreHelpers.GetSpotifyTokens(discordUserId);
         
-        if (userSpotifyToken.IsExpired == true)
+        if (userSpotifyToken.IsExpired == false)
         {
             await RefreshAccessToken(discordUserId);
         }
@@ -185,8 +185,8 @@ public class SpotifyApiService : ISpotifyApiService
                 {
                     // Use existing token as spotify generally returns "" for the refresh
                     var newRefreshToken = string.IsNullOrEmpty(tokenResponse.refresh_token) ? existingSpotifyCache.RefreshToken : tokenResponse.refresh_token;
-                    var replacedTokenObject = existingSpotifyCache.WithRefreshedToken(newRefreshToken);    
-                    _tokenStoreHelpers.AddOrUpdateSpotifyToken(discordUserId, replacedTokenObject);
+                    var replacedTokenObject = existingSpotifyCache.WithRefreshedToken(tokenResponse.access_token, newRefreshToken);    
+                    await _tokenStoreHelpers.AddOrUpdateSpotifyToken(discordUserId, replacedTokenObject);
                     
                     _logger.LogApplicationMessage(DateTime.UtcNow, $"Successfully refreshed Spotify access token for {discordUserId} with Spotify user Id : '{replacedTokenObject.SpotifyUserId}'");
                 }

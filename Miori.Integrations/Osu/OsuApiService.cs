@@ -103,8 +103,8 @@ public class OsuApiService : IOsuApiService
                     var newRefreshToken = string.IsNullOrEmpty(tokenResponse.refresh_token)
                         ? existingOsuCache.RefreshToken
                         : tokenResponse.refresh_token;
-                    var replacedTokenObject = existingOsuCache.WithRefreshedToken(newRefreshToken);
-                    _tokenStoreHelpers.AddOrUpdateOsuToken(discordUserId, replacedTokenObject);
+                    var replacedTokenObject = existingOsuCache.WithRefreshedToken(tokenResponse.access_token, newRefreshToken);
+                   await _tokenStoreHelpers.AddOrUpdateOsuToken(discordUserId, replacedTokenObject);
 
                     _logger.LogApplicationMessage(DateTime.UtcNow,
                         $"Successfully refreshed Osu token for {discordUserId} with Osu user Id : '{replacedTokenObject.OsuUserId}'");
