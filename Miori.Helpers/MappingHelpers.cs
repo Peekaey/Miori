@@ -125,7 +125,7 @@ public static class MappingHelpers
                 TrackName = track.track.name,
                 TrackId = track.track.id,
                 TrackUrl = track.track.external_urls.spotify,
-                PlayedAtUtc = track.played_at.Date,
+                PlayedAtUtc = track.played_at,
                 Artists = track.track.artists.Select(artist => new SpotifyMappedArtistDto
                 {
                     ArtistId = artist.id,

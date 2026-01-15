@@ -25,7 +25,7 @@ public class SpotifyMappedRecentlyPlayedDto
     [JsonPropertyName("track_url")]
     public string TrackUrl { get; set; }
     [JsonPropertyName("played_at_utc")]
-    public DateTimeOffset PlayedAtUtc { get; set; }
+    public DateTime PlayedAtUtc { get; set; }
     [JsonPropertyName("artists")]
     public List<SpotifyMappedArtistDto> Artists { get; set; }
 
