@@ -144,7 +144,7 @@ public class SpotifyApiService : ISpotifyApiService
     {
         var userSpotifyToken = await  _tokenStoreHelpers.GetSpotifyTokens(discordUserId);
         
-        if (userSpotifyToken.IsExpired == false)
+        if (userSpotifyToken.IsExpired == true)
         {
             await RefreshAccessToken(discordUserId);
         }
