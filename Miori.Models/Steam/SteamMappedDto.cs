@@ -34,4 +34,7 @@ public class SteamMappedRecentGamesDto
     public string ImgIconUrl { get; set; }
     [JsonPropertyName("img_header_url")]
     public string ImgHeaderUrl { get; set; }
+
+    [JsonPropertyName("store_url")]
+    public string StoreUrl => $"https://store.steampowered.com/app/{AppId}";
 }
