@@ -122,7 +122,7 @@ public static class MappingHelpers
         {
             Id = activity.Id,
             Type = activity.Type,
-            CreatedAt = activity.CreatedAt,
+            CreatedAtUtc = DateTimeOffset.FromUnixTimeSeconds(activity.CreatedAt).UtcDateTime,
             
             Message = activity.Message,
             Messenger = activity.Messenger != null ? MapUser(activity.Messenger) : null,
@@ -169,7 +169,7 @@ public static class MappingHelpers
         {
             Id = reply.Id,
             Text = reply.Text,
-            CreatedAt = reply.CreatedAt,
+            CreatedAtUtc = DateTimeOffset.FromUnixTimeSeconds(reply.CreatedAt).UtcDateTime,
             User = reply.User != null ? MapUser(reply.User) : null
         };
     }

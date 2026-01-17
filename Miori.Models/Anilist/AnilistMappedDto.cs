@@ -59,10 +59,24 @@ public class AnilistMappedActivityDto
     public int Id { get; set; }
     [JsonPropertyName("type")]
     public string Type { get; set; }
-    [JsonPropertyName("created_at")]
-    public int CreatedAt { get; set; }
+    [JsonPropertyName("created_at_utc")]
+    public DateTime CreatedAtUtc { get; set; }
     [JsonPropertyName("message")]
     public string Message { get; set; }
+    [JsonPropertyName("url")]
+    public string Url {
+        get
+        {
+            if (Type == "MESSAGE")
+            {
+                return "";
+            }
+            var mediaType = Media.Type.ToLower();
+            var id = Media.Id;
+            return $"https://anilist.co/{mediaType}/{id}";
+        }
+        
+    }
     [JsonPropertyName("messenger")]
     public AnilistMappedUserDto Messenger { get; set; }
     [JsonPropertyName("recipient")]
@@ -115,8 +129,8 @@ public class AnilistMappedReplyDto
     public int Id { get; set; }
     [JsonPropertyName("text")]
     public string Text { get; set; }
-    [JsonPropertyName("created_at")]
-    public int CreatedAt { get; set; }
+    [JsonPropertyName("created_at_utc")]
+    public DateTime CreatedAtUtc { get; set; }
     [JsonPropertyName("user")]
     public AnilistMappedUserDto User { get; set; }
 }
