@@ -46,7 +46,7 @@ public static class MappingHelpers
             CreatedAtUtc = activity.CreatedAt.UtcDateTime,
             TimeStampStartUtc = activity.Timestamps?.StartTime?.DateTime ?? DateTime.MinValue,
             TimeStampEndUtc = activity.Timestamps?.EndTime?.DateTime ?? DateTime.MinValue,
-            ActivityType = activity.Type.ToString(),
+            ActivityType = activity.Type.ToString()
         }).ToList() ?? new List<DiscordActivityMappedDto>();
     }
 
@@ -84,32 +84,93 @@ public static class MappingHelpers
         };
     }
 
-    public static AnilistMappedDto MapToApiDto(this AnilistProfileDto anilistProfileDto)
+    public static AnilistMappedDto MapToApiDto(this AnilistResponseDto anilistResponseDto)
     {
         return new AnilistMappedDto
         {
-            Id = anilistProfileDto.AnilistProfileResponse.data.viewer.id,
-            Name = anilistProfileDto.AnilistProfileResponse.data.viewer.name,
-            SiteUrl = anilistProfileDto.AnilistProfileResponse.data.viewer.siteUrl,
-            AvatarUrl = anilistProfileDto.AnilistProfileResponse.data.viewer.avatar.large,
-            BannerImageUrl = anilistProfileDto.AnilistProfileResponse.data.viewer.bannerImage ?? string.Empty,
+            Id = anilistResponseDto.AnilistProfileResponse.data.viewer.id,
+            Name = anilistResponseDto.AnilistProfileResponse.data.viewer.name,
+            SiteUrl = anilistResponseDto.AnilistProfileResponse.data.viewer.siteUrl,
+            AvatarUrl = anilistResponseDto.AnilistProfileResponse.data.viewer.avatar.large,
+            BannerImageUrl = anilistResponseDto.AnilistProfileResponse.data.viewer.bannerImage ?? string.Empty,
             Statistics = new AnilistMappedStatisticsDto
             {
                 Anime = new AnilistMappedStatisticsAnimeDto
                 {
-                    Count = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.anime.count,
-                    MeanScore = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.anime.meanScore,
-                    EpisodesWatched = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.anime.episodesWatched,
-                    MinutesWatched = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.anime.minutesWatched
+                    Count = anilistResponseDto.AnilistProfileResponse.data.viewer.statistics.anime.count,
+                    MeanScore = anilistResponseDto.AnilistProfileResponse.data.viewer.statistics.anime.meanScore,
+                    EpisodesWatched = anilistResponseDto.AnilistProfileResponse.data.viewer.statistics.anime.episodesWatched,
+                    MinutesWatched = anilistResponseDto.AnilistProfileResponse.data.viewer.statistics.anime.minutesWatched
                 },
                 Manga = new AnilistMappedStatisticsMangaDto
                 {
-                    ChaptersRead = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.manga.chaptersRead,
-                    Count = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.manga.count,
-                    MeanScore = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.manga.meanScore,
-                    VolumesRead = anilistProfileDto.AnilistProfileResponse.data.viewer.statistics.manga.volumesRead,
+                    ChaptersRead = anilistResponseDto.AnilistProfileResponse.data.viewer.statistics.manga.chaptersRead,
+                    Count = anilistResponseDto.AnilistProfileResponse.data.viewer.statistics.manga.count,
+                    MeanScore = anilistResponseDto.AnilistProfileResponse.data.viewer.statistics.manga.meanScore,
+                    VolumesRead = anilistResponseDto.AnilistProfileResponse.data.viewer.statistics.manga.volumesRead,
                 }
-            }
+            },
+            Activities = anilistResponseDto.AnilistActivityResponse?.Data?.Page?.Activities?
+                .Select(MapActivity)
+                .ToList() ?? new List<AnilistMappedActivityDto>()
+        };
+    }
+
+    private static AnilistMappedActivityDto MapActivity(ActivityBase activity)
+    {
+        return new AnilistMappedActivityDto
+        {
+            Id = activity.Id,
+            Type = activity.Type,
+            CreatedAt = activity.CreatedAt,
+            
+            Message = activity.Message,
+            Messenger = activity.Messenger != null ? MapUser(activity.Messenger) : null,
+            Recipient = activity.Recipient != null ? MapUser(activity.Recipient) : null,
+            
+            Status = activity.Status,
+            Progress = activity.Progress,
+            Media = activity.Media != null ? MapMedia(activity.Media) : null,
+            
+            Text = activity.Text,
+            
+            User = activity.User != null ? MapUser(activity.User) : null,
+            Likes = activity.Likes?.Select(MapUser).ToList() ?? new List<AnilistMappedUserDto>(),
+            Replies = activity.Replies?.Select(MapReply).ToList() ?? new List<AnilistMappedReplyDto>()
+        };
+    }
+
+    private static AnilistMappedUserDto MapUser(User user)
+    {
+        return new AnilistMappedUserDto
+        {
+            Id = user.Id,
+            Name = user.Name,
+            AvatarUrl = user.Avatar?.Large ?? string.Empty
+        };
+    }
+
+    private static AnilistMappedMediaDto MapMedia(Media media)
+    {
+        return new AnilistMappedMediaDto
+        {
+            Id = media.Id,
+            Type = media.Type,
+            TitleRomaji = media.Title?.Romaji ?? string.Empty,
+            TitleEnglish = media.Title?.English ?? string.Empty,
+            TitleNative = media.Title?.Native ?? string.Empty,
+            CoverImageUrl = media.CoverImage?.Large ?? string.Empty
+        };
+    }
+
+    private static AnilistMappedReplyDto MapReply(Reply reply)
+    {
+        return new AnilistMappedReplyDto
+        {
+            Id = reply.Id,
+            Text = reply.Text,
+            CreatedAt = reply.CreatedAt,
+            User = reply.User != null ? MapUser(reply.User) : null
         };
     }
     

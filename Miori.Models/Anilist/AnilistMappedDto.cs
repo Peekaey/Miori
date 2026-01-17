@@ -17,6 +17,8 @@ public class AnilistMappedDto
     public string BannerImageUrl { get; set; }
     [JsonPropertyName("statistics")]
     public AnilistMappedStatisticsDto Statistics { get; set; }
+    [JsonPropertyName("activities")]
+    public List<AnilistMappedActivityDto> Activities { get; set; }
 }
 
 public class AnilistMappedStatisticsDto
@@ -49,4 +51,72 @@ public class AnilistMappedStatisticsMangaDto
     public int Count { get; set; }
     [JsonPropertyName("mean_score")]
     public double MeanScore { get; set; }
+}
+
+public class AnilistMappedActivityDto
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+    [JsonPropertyName("type")]
+    public string Type { get; set; }
+    [JsonPropertyName("created_at")]
+    public int CreatedAt { get; set; }
+    [JsonPropertyName("message")]
+    public string Message { get; set; }
+    [JsonPropertyName("messenger")]
+    public AnilistMappedUserDto Messenger { get; set; }
+    [JsonPropertyName("recipient")]
+    public AnilistMappedUserDto Recipient { get; set; }
+    [JsonPropertyName("status")]
+    public string Status { get; set; }
+    [JsonPropertyName("progress")]
+    public string Progress { get; set; }
+    [JsonPropertyName("media")]
+    public AnilistMappedMediaDto Media { get; set; }
+    [JsonPropertyName("text")]
+    public string Text { get; set; }
+    [JsonPropertyName("user")]
+    public AnilistMappedUserDto User { get; set; }
+    [JsonPropertyName("likes")]
+    public List<AnilistMappedUserDto> Likes { get; set; }
+    [JsonPropertyName("replies")]
+    public List<AnilistMappedReplyDto> Replies { get; set; }
+}
+
+public class AnilistMappedUserDto
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
+    [JsonPropertyName("avatar_url")]
+    public string AvatarUrl { get; set; }
+}
+
+public class AnilistMappedMediaDto
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+    [JsonPropertyName("type")]
+    public string Type { get; set; }
+    [JsonPropertyName("title_romaji")]
+    public string TitleRomaji { get; set; }
+    [JsonPropertyName("title_english")]
+    public string TitleEnglish { get; set; }
+    [JsonPropertyName("title_native")]
+    public string TitleNative { get; set; }
+    [JsonPropertyName("cover_image_url")]
+    public string CoverImageUrl { get; set; }
+}
+
+public class AnilistMappedReplyDto
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+    [JsonPropertyName("text")]
+    public string Text { get; set; }
+    [JsonPropertyName("created_at")]
+    public int CreatedAt { get; set; }
+    [JsonPropertyName("user")]
+    public AnilistMappedUserDto User { get; set; }
 }

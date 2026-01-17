@@ -25,7 +25,7 @@ public class AnilistCacheService : IAnilistCacheService
         _configuration = configuration;
     }
 
-    public async Task<Result<AnilistProfileDto>> GetCachedAnilistProfile(ulong discordUserId)
+    public async Task<Result<AnilistResponseDto>> GetCachedAnilistProfile(ulong discordUserId)
     {
         try
         {
@@ -39,7 +39,7 @@ public class AnilistCacheService : IAnilistCacheService
                     {
                         _logger.LogApplicationMessage(DateTime.UtcNow,
                             "Cache miss - fetching latest Anilist profile data...");
-                        return await _anilistApiService.FetchAnilistDataFromApi(discordUserId);
+                        return await _anilistApiService.FetchAnilistDataFromApiConcurrently(discordUserId);
                     },
                     new HybridCacheEntryOptions
                     {
@@ -47,19 +47,19 @@ public class AnilistCacheService : IAnilistCacheService
                         LocalCacheExpiration = TimeSpan.FromMinutes(5)
                     });
 
-                return Result<AnilistProfileDto>.AsSuccess(cachedData);
+                return Result<AnilistResponseDto>.AsSuccess(cachedData);
 
             }
             else
             {
-                var profileData = await  _anilistApiService.FetchAnilistDataFromApi(discordUserId);
-                return Result<AnilistProfileDto>.AsSuccess(profileData);
+                var profileData = await  _anilistApiService.FetchAnilistDataFromApiConcurrently(discordUserId);
+                return Result<AnilistResponseDto>.AsSuccess(profileData);
             }
         }
         catch (Exception ex)
         {
             _logger.LogApplicationException(DateTime.UtcNow, ex, "Error fetching Anilist profile data in cache layer");
-            return Result<AnilistProfileDto>.AsError(ex.Message);
+            return Result<AnilistResponseDto>.AsError(ex.Message);
         }
     }
 }

@@ -5,5 +5,5 @@ namespace Miori.BusinessService;
 
 public interface IAnilistCacheService
 {
-    Task<Result<AnilistProfileDto>> GetCachedAnilistProfile(ulong discordUserId);
+    Task<Result<AnilistResponseDto>> GetCachedAnilistProfile(ulong discordUserId);
 }

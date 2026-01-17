@@ -8,6 +8,7 @@ using Miori.Integrations.Anilist.Interfaces;
 using Miori.Models;
 using Miori.Models.Anilist;
 using Miori.Models.Configuration;
+using Miori.Models.Enums;
 using Miori.Models.Spotify;
 using Miori.TokenStore;
 
@@ -73,15 +74,28 @@ public class AnilistApiService : IAnilistApiService
         }
     }
     
-    public async Task<AnilistProfileDto> FetchAnilistDataFromApi(ulong discordUserId)
+    public async Task<AnilistResponseDto> FetchAnilistDataFromApiConcurrently(ulong discordUserId)
     {
-
+        var anilistDto = new AnilistResponseDto();
         // Don't handle any errors, let it bubble up and handle
-        var anilistProfileWithStatistics = await GetAnilistProfileWithStatistics(discordUserId);
-        return new AnilistProfileDto
+        var userActivityTask = GetAnilistUserActivity(discordUserId);
+        var anilistProfileWithStatisticsTask = GetAnilistProfileWithStatistics(discordUserId);
+        
+        await Task.WhenAll(userActivityTask, anilistProfileWithStatisticsTask);
+
+        var userActivityResult = await userActivityTask;
+        var anilistProfileWithStatisticsResult = await anilistProfileWithStatisticsTask;
+
+        if (userActivityResult.ResultOutcome == ResultEnum.Success)
         {
-            AnilistProfileResponse = anilistProfileWithStatistics.Data
-        };
+            anilistDto.AnilistActivityResponse = userActivityResult.Data;
+        }
+
+        if (anilistProfileWithStatisticsResult.ResultOutcome == ResultEnum.Success)
+        {
+            anilistDto.AnilistProfileResponse = anilistProfileWithStatisticsResult.Data;
+        }
+        return anilistDto;
     }
 
     // https://docs.anilist.co/guide/auth/
@@ -133,5 +147,58 @@ public class AnilistApiService : IAnilistApiService
             return Result<AnilistProfileResponse>.AsError("Exception when getting anilist profile info with statistics");
         }
     }
+
+    public async Task<Result<AniListActivityResponse>> GetAnilistUserActivity(ulong discordUserId, int page = 1, int perPage = 25)
+{
+    try
+    {
+        var existingAnilistCache = await _tokenStoreHelpers.GetAnilistTokens(discordUserId);
+        var requestBody = new
+        {
+            query = AnilistQueries._userActivityQuery,
+            variables = new
+            {
+                userId = existingAnilistCache.AnilistUserId,
+                page = page,
+                perPage = perPage
+            }
+        };
+
+        var json = JsonSerializer.Serialize(requestBody);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var httpClient = _httpClientFactory.CreateClient();
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", existingAnilistCache.AccessToken);
+
+        var response = await httpClient.PostAsync(_apiEndpoint, content);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogApplicationError(DateTime.UtcNow,
+                "Unsuccessful response from Anilist API when attempting to get user activity");
+            return Result<AniListActivityResponse>.AsError(
+                "Unsuccessful response from Anilist API when attempting to get user activity");
+        }
+
+        var responseString = await response.Content.ReadAsStringAsync();
+
+        var responseObject = JsonSerializer.Deserialize<AniListActivityResponse>(responseString,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        if (responseObject == null)
+        {
+            _logger.LogApplicationError(DateTime.UtcNow,
+                "Failed to deserialise the response from the Anilist API when getting user activity");
+            return Result<AniListActivityResponse>.AsError("Failed to deserialise the response from the Anilist API when getting user activity");
+        }
+
+        return Result<AniListActivityResponse>.AsSuccess(responseObject);
+    }
+    catch (Exception ex)
+    {
+        _logger.LogApplicationError(DateTime.UtcNow, "Exception when getting Anilist user activity");
+        return Result<AniListActivityResponse>.AsError("Exception when getting Anilist user activity");
+    }
+}
 
 }
