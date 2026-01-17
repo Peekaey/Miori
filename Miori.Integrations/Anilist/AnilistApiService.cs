@@ -148,7 +148,7 @@ public class AnilistApiService : IAnilistApiService
         }
     }
 
-    public async Task<Result<AniListActivityResponse>> GetAnilistUserActivity(ulong discordUserId, int page = 1, int perPage = 25)
+    public async Task<Result<AniListActivityResponse>> GetAnilistUserActivity(ulong discordUserId, int page = 1, int perPage = 18)
 {
     try
     {
